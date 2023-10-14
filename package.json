@@ -12,6 +12,16 @@
     "build-watch": "tsc -w",
     "prepublishOnly": "yarn build"
   },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "payload",
+    "payloadcms",
+    "typescript",
+    "api",
+    "rest"
+  ],
   "devDependencies": {
     "@types/qs": "^6.9.8",
     "typescript": "^5.2.2"
