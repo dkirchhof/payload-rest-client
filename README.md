@@ -1,7 +1,6 @@
 # payload-rest-client
 
-A typesafe rest api client for the payload cms.
-
+A typesafe rest api client for the [payload cms](https://payloadcms.com).
 
 ## Quick Start 
 
@@ -47,6 +46,8 @@ console.log(users); // type of users is FindResult<User>
 ```
 
 ## API
+
+[Full documentation of the rest api](https://payloadcms.com/docs/rest-api/overview)
 
 ### Client options
 
