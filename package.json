@@ -1,0 +1,25 @@
+{
+  "name": "payload-rest-client",
+  "version": "0.0.1",
+  "description": "A typesafe rest api client for the payload cms.",
+  "repository": "git@github.com:pemedia/payload-visual-editor.git",
+  "author": "dkirchhof@gmail.com",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build-watch": "tsc -w",
+    "prepublishOnly": "yarn build"
+  },
+  "devDependencies": {
+    "@types/qs": "^6.9.8",
+    "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "qs": "^6.11.2"
+  }
+}
