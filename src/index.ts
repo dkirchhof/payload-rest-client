@@ -85,12 +85,12 @@ const createGlobalsProxy = (options: FetchOptions) => {
         get: (_, slug: string) => {
             const api: GlobalsApi<any, any> = {
                 get: params => {
-                    return fetchFn("GET", [slug], createQS(params));
+                    return fetchFn("GET", ["global", slug], createQS(params));
                 },
                 update: params => {
                     const { patch, ...rest } = params;
 
-                    return fetchFn("GET", [slug], createQS(rest));
+                    return fetchFn("GET", ["globals", slug], createQS(rest));
                 },
             };
 
