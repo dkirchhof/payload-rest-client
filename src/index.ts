@@ -4,6 +4,20 @@ import { BaseParams, CollectionsApi, Config, FetchOptions, GlobalsApi, RPC } fro
 
 const createQS = (params?: BaseParams<any>) => stringify(params, { encode: false });
 
+const parseData = async (res: Response): Promise<{ data: any; asText: string; }> => {
+    if (res.headers.get("content-type")?.startsWith("application/json")) {
+        const json = await res.json();
+        const asText = JSON.stringify(json);
+
+        return { data: json, asText };
+    } else {
+        const text = await res.text();
+        const asText = text;
+
+        return { data: text, asText };
+    }
+};
+
 const fetchFactory = (options: FetchOptions) => async (method: "GET" | "POST" | "PATCH" | "DELETE", url: string[], qs: string | null, body?: any) => {
     const qsString = qs ? `?${qs}` : "";
     const fullUrl = `${options.apiUrl}/${url.join("/")}${qsString}`;
@@ -20,18 +34,18 @@ const fetchFactory = (options: FetchOptions) => async (method: "GET" | "POST" | 
         body: JSON.stringify(body),
     });
 
-    const json =  await res.json();
+    const data = await parseData(res);
 
     if (!res.ok) {
         switch (res.status) {
-            case 401: throw new UnauthorizedError(JSON.stringify(json));
-            case 403: throw new ForbiddenError(JSON.stringify(json));
-            case 404: throw new NotFoundError(JSON.stringify(json));
-            default: throw new Error(JSON.stringify(json));
+            case 401: throw new UnauthorizedError(data.asText);
+            case 403: throw new ForbiddenError(data.asText);
+            case 404: throw new NotFoundError(data.asText);
+            default: throw new Error(data.asText);
         }
     }
 
-    return json;
+    return data.data;
 };
 
 const createCollectionsProxy = (options: FetchOptions) => {
@@ -85,7 +99,7 @@ const createGlobalsProxy = (options: FetchOptions) => {
         get: (_, slug: string) => {
             const api: GlobalsApi<any, any> = {
                 get: params => {
-                    return fetchFn("GET", ["global", slug], createQS(params));
+                    return fetchFn("GET", ["globals", slug], createQS(params));
                 },
                 update: params => {
                     const { patch, ...rest } = params;
