@@ -54,6 +54,7 @@ console.log(users); // type of users is FindResult<User>
 - apiUrl: string;
 - cache?: RequestCache;
 - headers?: HeadersInit;
+- debug?: boolean;
 
 ### Collections
 

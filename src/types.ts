@@ -30,6 +30,7 @@ export type FetchOptions = {
     apiUrl: string;
     cache?: RequestCache;
     headers?: HeadersInit;
+    debug?: boolean;
 };
 
 export type Operand<T> =

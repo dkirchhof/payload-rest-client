@@ -30,6 +30,7 @@ type Locales = "de" | "en";
 const client = createClient<Config, Locales>({
     apiUrl: "http://localhost:4000/api",
     cache: "no-store",
+    debug: true,
 });
 
 const test = async () => {

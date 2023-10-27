@@ -22,8 +22,6 @@ const fetchFactory = (options: FetchOptions) => async (method: "GET" | "POST" | 
     const qsString = qs ? `?${qs}` : "";
     const fullUrl = `${options.apiUrl}/${url.join("/")}${qsString}`;
 
-    // console.log(method, fullUrl, body);
-
     const res = await fetch(fullUrl, {
         method,
         cache: options.cache,
@@ -35,6 +33,10 @@ const fetchFactory = (options: FetchOptions) => async (method: "GET" | "POST" | 
     });
 
     const data = await parseData(res);
+
+    if (options.debug) {
+        console.log(`${method}: ${fullUrl} => ${res.status}`);
+    }
 
     if (!res.ok) {
         switch (res.status) {
