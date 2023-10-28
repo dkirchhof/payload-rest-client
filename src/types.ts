@@ -84,7 +84,11 @@ export type FindResult<T> = {
 };
 
 export type CreateParams<T, LOCALES> = BaseParams<LOCALES> & {
-    doc: T;
+    doc: Omit<T, "id" | "createdAt" | "updatedAt"> & {
+        id?: string;
+        createdAt?: string;
+        updatedAt?: string;
+    };
 };
 
 export type CreateResult<T> = {

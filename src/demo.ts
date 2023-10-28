@@ -16,6 +16,8 @@ export interface User {
     email: string;
     name: string;
     password: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface Settings {
@@ -45,7 +47,7 @@ const test = async () => {
     console.log(users1);
 
     const newUser = await client.collections.users.create({
-        doc: { id: "", name: "hans", email: "test@test.de", password: "password" },
+        doc: { name: "hans", email: "test@test.de", password: "password" },
     });
 
     console.log("##### new user #####")
