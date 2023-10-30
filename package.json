@@ -23,13 +23,6 @@
     "rest"
   ],
   "devDependencies": {
-    "@types/qs": "^6.9.8",
     "typescript": "^5.2.2"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "qs": "^6.11.2"
   }
 }
