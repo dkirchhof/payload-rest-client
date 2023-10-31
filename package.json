@@ -1,6 +1,6 @@
 {
   "name": "payload-rest-client",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A typesafe rest api client for the payload cms.",
   "repository": "https://github.com/dkirchhof/payload-rest-client",
   "author": "dkirchhof@gmail.com",
@@ -23,13 +23,6 @@
     "rest"
   ],
   "devDependencies": {
-    "@types/qs": "^6.9.8",
     "typescript": "^5.2.2"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "qs": "^6.11.2"
   }
 }
