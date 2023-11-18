@@ -18,9 +18,11 @@
   "keywords": [
     "payload",
     "payloadcms",
+    "payload-plugin",
     "typescript",
     "api",
-    "rest"
+    "rest",
+    "rpc"
   ],
   "devDependencies": {
     "typescript": "^5.2.2"
