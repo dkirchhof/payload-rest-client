@@ -29,7 +29,6 @@ const client = createClient<Config, Locales>({
     apiUrl: "http://localhost:4000/api",
     cache: "no-store",
 });
-
 ```
 
 3. Now you can use all available queries for all collections and globals in a typesafe way:
@@ -55,6 +54,7 @@ console.log(users); // type of users is FindResult<User>
 - cache?: RequestCache;
 - headers?: HeadersInit;
 - debug?: boolean;
+- getAdditionalFetchOptions?: (params: GetAdditionalFetchOptionsParams) => any
 
 ### Collections
 

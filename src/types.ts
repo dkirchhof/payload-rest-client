@@ -26,11 +26,19 @@ export type RPC<T extends Config, LOCALES> = {
     globals: { [P in keyof Globals<T>]: GlobalsApi<Globals<T>[P], LOCALES>; };
 };
 
+export type GetAdditionalFetchOptionsParams = {
+    type: "collection" | "global";
+    slug: string;
+    method: string;
+    url: string;
+};
+
 export type FetchOptions = {
     apiUrl: string;
     cache?: RequestCache;
     headers?: HeadersInit;
     debug?: boolean;
+    getAdditionalFetchOptions?: (params: GetAdditionalFetchOptionsParams) => any;
 };
 
 export type Operand<T> =

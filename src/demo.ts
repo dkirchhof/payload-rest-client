@@ -33,6 +33,13 @@ const client = createClient<Config, Locales>({
     apiUrl: "http://localhost:4000/api",
     cache: "no-store",
     debug: true,
+    getAdditionalFetchOptions: (params) => {
+        if (params.method === "GET") {
+            return {
+                next: { tags: [params.slug] },
+            };
+        }
+    },
 });
 
 const test = async () => {

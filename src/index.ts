@@ -16,24 +16,44 @@ const parseData = async (res: Response): Promise<{ data: any; asText: string; }>
     }
 };
 
-const fetchFactory = (options: FetchOptions) => async (method: "GET" | "POST" | "PATCH" | "DELETE", url: string[], qs: string | null, body?: any) => {
-    const qsString = qs ? `?${qs}` : "";
-    const fullUrl = `${options.apiUrl}/${url.join("/")}${qsString}`;
+type FetchParams = {
+    type: "collection" | "global";
+    slug: string;
+    method: "GET" | "POST" | "PATCH" | "DELETE";
+    url: string[];
+    qs: string | null;
+    body?: any;
+};
+
+const fetchFactory = (options: FetchOptions) => async (params: FetchParams) => {
+    const qsString = params.qs ? `?${params.qs}` : "";
+    const fullUrl = `${options.apiUrl}/${params.url.join("/")}${qsString}`;
+
+    const additionalFetchOptions = options.getAdditionalFetchOptions?.({
+        type: params.type,
+        slug: params.slug,
+        method: params.method,
+        url: fullUrl,
+    });
 
     const res = await fetch(fullUrl, {
-        method,
+        method: params.method,
         cache: options.cache,
         headers: {
             ...options.headers,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: params.body && JSON.stringify(params.body),
+        ...additionalFetchOptions,
     });
 
     const data = await parseData(res);
 
     if (options.debug) {
-        console.log(`${method}: ${fullUrl} => ${res.status}`);
+        console.log(`type: ${params.type}`);
+        console.log(`slug: ${params.slug}`);
+        console.log(`additionalFetchOptions: ${JSON.stringify(additionalFetchOptions)}`);
+        console.log(`request: ${params.method} ${fullUrl} => ${res.status}`);
     }
 
     if (!res.ok) {
@@ -55,35 +75,80 @@ const createCollectionsProxy = (options: FetchOptions) => {
         get: (_, slug: string) => {
             const api: CollectionsApi<any, any> = {
                 find: params => {
-                    return fetchFn("GET", [slug], createQueryString(params));
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "GET",
+                        url: [slug],
+                        qs: createQueryString(params),
+                    });
                 },
                 findById: params => {
                     const { id, ...rest } = params;
 
-                    return fetchFn("GET", [slug, id], createQueryString(rest));
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "GET",
+                        url: [slug, id],
+                        qs: createQueryString(rest),
+                    });
                 },
                 create: params => {
                     const { doc, ...rest } = params;
 
-                    return fetchFn("POST", [slug], createQueryString(rest), doc);
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "POST",
+                        url: [slug],
+                        qs: createQueryString(rest),
+                        body: doc,
+                    });
                 },
                 update: params => {
                     const { patch, ...rest } = params;
 
-                    return fetchFn("PATCH", [slug], createQueryString(rest));
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "PATCH",
+                        url: [slug],
+                        qs: createQueryString(rest),
+                        body: patch,
+                    });
                 },
                 updateById: params => {
                     const { id, patch, ...rest } = params;
 
-                    return fetchFn("PATCH", [slug, id], createQueryString(rest), patch);
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "PATCH",
+                        url: [slug, id], 
+                        qs: createQueryString(rest),
+                        body: patch,
+                    });
                 },
                 delete: params => {
-                    return fetchFn("DELETE", [slug], createQueryString(params));
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "DELETE",
+                        url: [slug],
+                        qs: createQueryString(params),
+                    });
                 },
                 deleteById: params => {
                     const { id, ...rest } = params;
 
-                    return fetchFn("DELETE", [slug, id], createQueryString(rest));
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "DELETE",
+                        url: [slug, id],
+                        qs: createQueryString(rest),
+                    });
                 },
             };
 
@@ -99,12 +164,25 @@ const createGlobalsProxy = (options: FetchOptions) => {
         get: (_, slug: string) => {
             const api: GlobalsApi<any, any> = {
                 get: params => {
-                    return fetchFn("GET", ["globals", slug], createQueryString(params));
+                    return fetchFn({
+                        type: "global",
+                        slug,
+                        method: "GET",
+                        url: ["globals", slug],
+                        qs: createQueryString(params),
+                    });
                 },
                 update: params => {
                     const { patch, ...rest } = params;
 
-                    return fetchFn("GET", ["globals", slug], createQueryString(rest));
+                    return fetchFn({
+                        type: "global",
+                        slug,
+                        method: "POST",
+                        url: ["globals", slug],
+                        qs: createQueryString(rest),
+                        body: patch
+                    });
                 },
             };
 
@@ -112,6 +190,7 @@ const createGlobalsProxy = (options: FetchOptions) => {
         },
     });
 };
+
 export const createClient = <T extends Config, LOCALES>(options: FetchOptions) => ({
     collections: createCollectionsProxy(options),
     globals: createGlobalsProxy(options),
