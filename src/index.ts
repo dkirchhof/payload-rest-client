@@ -1,6 +1,6 @@
 import { ForbiddenError, NotFoundError, UnauthorizedError } from "./errors";
 import { createQueryString } from "./qs";
-import { CollectionsApi, Config, FetchOptions, GlobalsApi, RPC } from "./types";
+import { CollectionsWithAuthApi, Config, FetchOptions, GlobalsApi, RPC } from "./types";
 
 const parseData = async (res: Response): Promise<{ data: any; asText: string; }> => {
     if (res.headers.get("content-type")?.startsWith("application/json")) {
@@ -73,7 +73,7 @@ const createCollectionsProxy = (options: FetchOptions) => {
 
     return new Proxy({}, {
         get: (_, slug: string) => {
-            const api: CollectionsApi<any, any> = {
+            const api: CollectionsWithAuthApi<any, any> = {
                 find: params => {
                     return fetchFn({
                         type: "collection",
@@ -148,6 +148,74 @@ const createCollectionsProxy = (options: FetchOptions) => {
                         method: "DELETE",
                         url: [slug, id],
                         qs: createQueryString(rest),
+                    });
+                },
+
+                login: params => {
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "POST",
+                        url: [slug, "login"],
+                        qs: "",
+                        body: params,
+                    });
+                },
+                logout: _params => {
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "POST",
+                        url: [slug, "logout"],
+                        qs: "",
+                    });
+                },
+                unlock: params => {
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "POST",
+                        url: [slug, "unlock"],
+                        qs: "",
+                        body: params,
+                    });
+                },
+                "refresh-token": _params => {
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "POST",
+                        url: [slug, "refresh-token"],
+                        qs: "",
+                    });
+                },
+                me: _params => {
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "GET",
+                        url: [slug, "me"],
+                        qs: "",
+                    });
+                },
+                "forgot-password": params => {
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "POST",
+                        url: [slug, "forgot-password"],
+                        qs: "",
+                        body: params,
+                    });
+                },
+                "reset-password": params => {
+                    return fetchFn({
+                        type: "collection",
+                        slug,
+                        method: "POST",
+                        url: [slug, "reset-password"],
+                        qs: "",
+                        body: params,
                     });
                 },
             };
