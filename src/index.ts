@@ -1,8 +1,8 @@
 import { ForbiddenError, NotFoundError, UnauthorizedError } from "./errors";
 import { createQueryString } from "./qs";
-import { CollectionsWithAuthApi, Config, FetchOptions, GlobalsApi, RPC } from "./types";
+import { AuthApi, CollectionsApi, Config, FetchOptions, GlobalsApi, RPC } from "./types";
 
-const parseData = async (res: Response): Promise<{ data: any; asText: string; }> => {
+const parseData = async (res: Response): Promise<{ data: any; asText: string }> => {
     if (res.headers.get("content-type")?.startsWith("application/json")) {
         const json = await res.json();
         const asText = JSON.stringify(json);
@@ -58,10 +58,14 @@ const fetchFactory = (options: FetchOptions) => async (params: FetchParams) => {
 
     if (!res.ok) {
         switch (res.status) {
-            case 401: throw new UnauthorizedError(data.asText);
-            case 403: throw new ForbiddenError(data.asText);
-            case 404: throw new NotFoundError(data.asText);
-            default: throw new Error(data.asText);
+            case 401:
+                throw new UnauthorizedError(data.asText);
+            case 403:
+                throw new ForbiddenError(data.asText);
+            case 404:
+                throw new NotFoundError(data.asText);
+            default:
+                throw new Error(data.asText);
         }
     }
 
@@ -71,195 +75,221 @@ const fetchFactory = (options: FetchOptions) => async (params: FetchParams) => {
 const createCollectionsProxy = (options: FetchOptions) => {
     const fetchFn = fetchFactory(options);
 
-    return new Proxy({}, {
-        get: (_, slug: string) => {
-            const api: CollectionsWithAuthApi<any, any> = {
-                find: params => {
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "GET",
-                        url: [slug],
-                        qs: createQueryString(params),
-                    });
-                },
-                findById: params => {
-                    const { id, ...rest } = params;
+    return new Proxy(
+        {},
+        {
+            get: (_, slug: string) => {
+                const api: CollectionsApi<any, any> = {
+                    find: (params) => {
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "GET",
+                            url: [slug],
+                            qs: createQueryString(params),
+                        });
+                    },
+                    findById: (params) => {
+                        const { id, ...rest } = params;
 
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "GET",
-                        url: [slug, id],
-                        qs: createQueryString(rest),
-                    });
-                },
-                create: params => {
-                    const { doc, ...rest } = params;
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "GET",
+                            url: [slug, id],
+                            qs: createQueryString(rest),
+                        });
+                    },
+                    create: (params) => {
+                        const { doc, ...rest } = params;
 
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "POST",
-                        url: [slug],
-                        qs: createQueryString(rest),
-                        body: doc,
-                    });
-                },
-                update: params => {
-                    const { patch, ...rest } = params;
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "POST",
+                            url: [slug],
+                            qs: createQueryString(rest),
+                            body: doc,
+                        });
+                    },
+                    update: (params) => {
+                        const { patch, ...rest } = params;
 
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "PATCH",
-                        url: [slug],
-                        qs: createQueryString(rest),
-                        body: patch,
-                    });
-                },
-                updateById: params => {
-                    const { id, patch, ...rest } = params;
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "PATCH",
+                            url: [slug],
+                            qs: createQueryString(rest),
+                            body: patch,
+                        });
+                    },
+                    updateById: (params) => {
+                        const { id, patch, ...rest } = params;
 
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "PATCH",
-                        url: [slug, id], 
-                        qs: createQueryString(rest),
-                        body: patch,
-                    });
-                },
-                delete: params => {
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "DELETE",
-                        url: [slug],
-                        qs: createQueryString(params),
-                    });
-                },
-                deleteById: params => {
-                    const { id, ...rest } = params;
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "PATCH",
+                            url: [slug, id],
+                            qs: createQueryString(rest),
+                            body: patch,
+                        });
+                    },
+                    delete: (params) => {
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "DELETE",
+                            url: [slug],
+                            qs: createQueryString(params),
+                        });
+                    },
+                    deleteById: (params) => {
+                        const { id, ...rest } = params;
 
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "DELETE",
-                        url: [slug, id],
-                        qs: createQueryString(rest),
-                    });
-                },
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "DELETE",
+                            url: [slug, id],
+                            qs: createQueryString(rest),
+                        });
+                    },
+                };
 
-                login: params => {
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "POST",
-                        url: [slug, "login"],
-                        qs: "",
-                        body: params,
-                    });
-                },
-                logout: _params => {
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "POST",
-                        url: [slug, "logout"],
-                        qs: "",
-                    });
-                },
-                unlock: params => {
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "POST",
-                        url: [slug, "unlock"],
-                        qs: "",
-                        body: params,
-                    });
-                },
-                "refresh-token": _params => {
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "POST",
-                        url: [slug, "refresh-token"],
-                        qs: "",
-                    });
-                },
-                me: _params => {
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "GET",
-                        url: [slug, "me"],
-                        qs: "",
-                    });
-                },
-                "forgot-password": params => {
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "POST",
-                        url: [slug, "forgot-password"],
-                        qs: "",
-                        body: params,
-                    });
-                },
-                "reset-password": params => {
-                    return fetchFn({
-                        type: "collection",
-                        slug,
-                        method: "POST",
-                        url: [slug, "reset-password"],
-                        qs: "",
-                        body: params,
-                    });
-                },
-            };
-
-            return api;
-        },
-    });
+                return api;
+            },
+        }
+    );
 };
 
 const createGlobalsProxy = (options: FetchOptions) => {
     const fetchFn = fetchFactory(options);
 
-    return new Proxy({}, {
-        get: (_, slug: string) => {
-            const api: GlobalsApi<any, any> = {
-                get: params => {
-                    return fetchFn({
-                        type: "global",
-                        slug,
-                        method: "GET",
-                        url: ["globals", slug],
-                        qs: createQueryString(params),
-                    });
-                },
-                update: params => {
-                    const { patch, ...rest } = params;
+    return new Proxy(
+        {},
+        {
+            get: (_, slug: string) => {
+                const api: GlobalsApi<any, any> = {
+                    get: (params) => {
+                        return fetchFn({
+                            type: "global",
+                            slug,
+                            method: "GET",
+                            url: ["globals", slug],
+                            qs: createQueryString(params),
+                        });
+                    },
+                    update: (params) => {
+                        const { patch, ...rest } = params;
 
-                    return fetchFn({
-                        type: "global",
-                        slug,
-                        method: "POST",
-                        url: ["globals", slug],
-                        qs: createQueryString(rest),
-                        body: patch
-                    });
-                },
-            };
+                        return fetchFn({
+                            type: "global",
+                            slug,
+                            method: "POST",
+                            url: ["globals", slug],
+                            qs: createQueryString(rest),
+                            body: patch,
+                        });
+                    },
+                };
 
-            return api;
-        },
-    });
+                return api;
+            },
+        }
+    );
 };
 
-export const createClient = <T extends Config, LOCALES>(options: FetchOptions) => ({
-    collections: createCollectionsProxy(options),
-    globals: createGlobalsProxy(options),
-}) as RPC<T, LOCALES>;
+const createAuthActions = <T extends Config, K extends keyof T["collections"]>(
+    options: FetchOptions,
+    userCollection?: keyof T["collections"]
+) => {
+    const fetchFn = fetchFactory(options);
+    const slug = userCollection?.toString() ?? ("users" as const);
+
+    const api: AuthApi<T["collections"][K]> = {
+        login: (params) => {
+            return fetchFn({
+                type: "collection",
+                slug,
+                method: "POST",
+                url: [slug, "login"],
+                qs: "",
+                body: params,
+            });
+        },
+        logout: (_params) => {
+            return fetchFn({
+                type: "collection",
+                slug,
+                method: "POST",
+                url: [slug, "logout"],
+                qs: "",
+            });
+        },
+        unlock: (params) => {
+            return fetchFn({
+                type: "collection",
+                slug,
+                method: "POST",
+                url: [slug, "unlock"],
+                qs: "",
+                body: params,
+            });
+        },
+        refreshToken: (_params) => {
+            return fetchFn({
+                type: "collection",
+                slug,
+                method: "POST",
+                url: [slug, "refresh-token"],
+                qs: "",
+            });
+        },
+        me: (_params) => {
+            return fetchFn({
+                type: "collection",
+                slug,
+                method: "GET",
+                url: [slug, "me"],
+                qs: "",
+            });
+        },
+        forgotPassword: (params) => {
+            return fetchFn({
+                type: "collection",
+                slug,
+                method: "POST",
+                url: [slug, "forgot-password"],
+                qs: "",
+                body: params,
+            });
+        },
+        resetPassword: (params) => {
+            return fetchFn({
+                type: "collection",
+                slug,
+                method: "POST",
+                url: [slug, "reset-password"],
+                qs: "",
+                body: params,
+            });
+        },
+    };
+    return api;
+};
+
+export const createClient = <
+    T extends Config,
+    LOCALES,
+    USERCOLLECTION extends keyof T["collections"] = "users",
+>(
+    options: FetchOptions,
+    userCollection?: keyof T["collections"]
+) =>
+    ({
+        collections: createCollectionsProxy(options),
+        globals: createGlobalsProxy(options),
+        auth: createAuthActions<T, USERCOLLECTION>(options, userCollection),
+    }) as RPC<T, LOCALES, USERCOLLECTION>;

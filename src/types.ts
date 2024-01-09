@@ -1,12 +1,7 @@
 export type Config = {
-    collections: { [k: string]: any; };
-    globals: { [k: string]: any; };
+    collections: { [k: string]: any };
+    globals: { [k: string]: any };
 };
-
-export type DocWithAuth = {
-    email: string;
-    password: string;
-}
 
 export type Collections<T extends Config> = T["collections"];
 export type Globals<T extends Config> = T["globals"];
@@ -21,15 +16,14 @@ export type CollectionsApi<T, LOCALES> = {
     deleteById: (params: DeleteByIdParams<LOCALES>) => Promise<T>;
 };
 
-export type CollectionsWithAuthApi<T, LOCALES> = CollectionsApi<T, LOCALES> & {
+export type AuthApi<T> = {
     login: (params: LoginParams) => Promise<LoginResult<T>>;
     logout: (params: LogoutParams) => Promise<LogoutResult>;
     unlock: (params: UnlockParams) => Promise<UnlockResult>;
-    "refresh-token": (params: RefreshTokenParams) => Promise<RefreshTokenResult>;
-    // verify
+    refreshToken: (params: RefreshTokenParams) => Promise<RefreshTokenResult<T>>;
     me: (params: MeParams) => Promise<MeResult<T>>;
-    "forgot-password": (params: ForgotPasswordParams) => Promise<ForgotPasswordResult>;
-    "reset-password": (params: ResetPasswordParams) => Promise<ResetPasswordResult<T>>;
+    forgotPassword: (params: ForgotPasswordParams) => Promise<ForgotPasswordResult>;
+    resetPassword: (params: ResetPasswordParams) => Promise<ResetPasswordResult<T>>;
 };
 
 export type GlobalsApi<T, LOCALES> = {
@@ -37,15 +31,14 @@ export type GlobalsApi<T, LOCALES> = {
     update: (params: UpdateGlobalParams<T, LOCALES>) => Promise<T>;
 };
 
-export type RPC<T extends Config, LOCALES> = {
+export type RPC<T extends Config, LOCALES, USERCOLLECTION extends keyof T["collections"]> = {
     collections: {
-        [P in keyof Collections<T>]: Collections<T>[P] extends DocWithAuth
-        ? CollectionsWithAuthApi<Collections<T>[P], LOCALES>
-        : CollectionsApi<Collections<T>[P], LOCALES>;
+        [P in keyof Collections<T>]: CollectionsApi<Collections<T>[P], LOCALES>;
     };
     globals: {
         [P in keyof Globals<T>]: GlobalsApi<Globals<T>[P], LOCALES>;
     };
+    auth: AuthApi<T["collections"][USERCOLLECTION]>;
 };
 
 export type GetAdditionalFetchOptionsParams = {
@@ -68,24 +61,24 @@ export type MessageResult = {
 };
 
 export type Operand<T> =
-    | { equals: T; }
-    | { not_equals: T; }
-    | { greater_than: T; }
-    | { greater_than_equal: T; }
-    | { less_than: T; }
-    | { less_than_equal: T; }
-    | { like: string; }
-    | { contains: string; }
-    | { in: string; }
-    | { not_in: string; }
-    | { all: string; }
-    | { exists: boolean; }
-    | { near: string; }
+    | { equals: T }
+    | { not_equals: T }
+    | { greater_than: T }
+    | { greater_than_equal: T }
+    | { less_than: T }
+    | { less_than_equal: T }
+    | { like: string }
+    | { contains: string }
+    | { in: string }
+    | { not_in: string }
+    | { all: string }
+    | { exists: boolean }
+    | { near: string };
 
 export type Filter<T> =
-    | { [P in keyof T]?: Operand<T[P]>; }
-    | { and: Array<Filter<T>>; }
-    | { or: Array<Filter<T>>; }
+    | { [P in keyof T]?: Operand<T[P]> }
+    | { and: Array<Filter<T>> }
+    | { or: Array<Filter<T>> };
 
 export type BaseParams<LOCALES> = {
     depth?: number;
@@ -105,16 +98,16 @@ export type FindByIdParams<LOCALES> = BaseParams<LOCALES> & {
 };
 
 export type FindResult<T> = {
-    docs: T[]
-    totalDocs: number
-    limit: number
-    totalPages: number
-    page?: number
-    pagingCounter: number
-    hasPrevPage: boolean
-    hasNextPage: boolean
-    prevPage?: number | null | undefined
-    nextPage?: number | null | undefined
+    docs: T[];
+    totalDocs: number;
+    limit: number;
+    totalPages: number;
+    page?: number;
+    pagingCounter: number;
+    hasPrevPage: boolean;
+    hasNextPage: boolean;
+    prevPage?: number | null | undefined;
+    nextPage?: number | null | undefined;
 };
 
 export type CreateParams<T, LOCALES> = BaseParams<LOCALES> & {
@@ -191,22 +184,34 @@ export type UnlockResult = MessageResult;
 
 export type RefreshTokenParams = void;
 
-export type RefreshTokenResult = {
+type Prettify<T> = {
+    [K in keyof T]: T[K];
+} & {};
+type User<T> = Prettify<
+    Omit<
+        T,
+        | "resetPasswordToken"
+        | "resetPasswordExpiration"
+        | "salt"
+        | "hash"
+        | "lockUntil"
+        | "password"
+    > & {
+        _strategy?: string;
+    }
+>;
+export type RefreshTokenResult<T> = {
     message: string;
     refreshedToken: string;
     exp: number;
-    user: {
-        id: string;
-        email: string;
-        collection: string;
-    };
+    user: User<T>;
 };
 
 export type MeParams = void;
 
 export type MeResult<T> = {
     collection: string;
-    user: T & { _strategy: string; };
+    user: User<T>;
     token: string;
     exp: number;
 };
@@ -224,6 +229,6 @@ export type ResetPasswordParams = {
 
 export type ResetPasswordResult<T> = {
     message: string;
-    user: T; 
+    user: User<T>;
     token: string;
 };
