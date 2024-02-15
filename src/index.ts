@@ -1,6 +1,6 @@
 import { ForbiddenError, NotFoundError, UnauthorizedError } from "./errors";
 import { createQueryString } from "./qs";
-import { AuthApi, CollectionsApi, Config, FetchOptions, GlobalsApi, RPC } from "./types";
+import { CollectionsWithAuthApi, Config, FetchOptions, GlobalsApi, RPC } from "./types";
 
 const parseData = async (res: Response): Promise<{ data: any; asText: string }> => {
     if (res.headers.get("content-type")?.startsWith("application/json")) {
@@ -79,7 +79,7 @@ const createCollectionsProxy = (options: FetchOptions) => {
         {},
         {
             get: (_, slug: string) => {
-                const api: CollectionsApi<any, any> = {
+                const api: CollectionsWithAuthApi<any, any> = {
                     find: (params) => {
                         return fetchFn({
                             type: "collection",
@@ -156,6 +156,74 @@ const createCollectionsProxy = (options: FetchOptions) => {
                             qs: createQueryString(rest),
                         });
                     },
+
+                    login: (params) => {
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "POST",
+                            url: [slug, "login"],
+                            qs: "",
+                            body: params,
+                        });
+                    },
+                    logout: (_params) => {
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "POST",
+                            url: [slug, "logout"],
+                            qs: "",
+                        });
+                    },
+                    unlock: (params) => {
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "POST",
+                            url: [slug, "unlock"],
+                            qs: "",
+                            body: params,
+                        });
+                    },
+                    "refresh-token": (_params) => {
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "POST",
+                            url: [slug, "refresh-token"],
+                            qs: "",
+                        });
+                    },
+                    me: (_params) => {
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "GET",
+                            url: [slug, "me"],
+                            qs: "",
+                        });
+                    },
+                    "forgot-password": (params) => {
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "POST",
+                            url: [slug, "forgot-password"],
+                            qs: "",
+                            body: params,
+                        });
+                    },
+                    "reset-password": (params) => {
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "POST",
+                            url: [slug, "reset-password"],
+                            qs: "",
+                            body: params,
+                        });
+                    },
                 };
 
                 return api;
@@ -201,95 +269,8 @@ const createGlobalsProxy = (options: FetchOptions) => {
     );
 };
 
-const createAuthActions = <T extends Config, K extends keyof T["collections"]>(
-    options: FetchOptions,
-    userCollection?: keyof T["collections"]
-) => {
-    const fetchFn = fetchFactory(options);
-    const slug = userCollection?.toString() ?? ("users" as const);
-
-    const api: AuthApi<T["collections"][K]> = {
-        login: (params) => {
-            return fetchFn({
-                type: "collection",
-                slug,
-                method: "POST",
-                url: [slug, "login"],
-                qs: "",
-                body: params,
-            });
-        },
-        logout: (_params) => {
-            return fetchFn({
-                type: "collection",
-                slug,
-                method: "POST",
-                url: [slug, "logout"],
-                qs: "",
-            });
-        },
-        unlock: (params) => {
-            return fetchFn({
-                type: "collection",
-                slug,
-                method: "POST",
-                url: [slug, "unlock"],
-                qs: "",
-                body: params,
-            });
-        },
-        refreshToken: (_params) => {
-            return fetchFn({
-                type: "collection",
-                slug,
-                method: "POST",
-                url: [slug, "refresh-token"],
-                qs: "",
-            });
-        },
-        me: (_params) => {
-            return fetchFn({
-                type: "collection",
-                slug,
-                method: "GET",
-                url: [slug, "me"],
-                qs: "",
-            });
-        },
-        forgotPassword: (params) => {
-            return fetchFn({
-                type: "collection",
-                slug,
-                method: "POST",
-                url: [slug, "forgot-password"],
-                qs: "",
-                body: params,
-            });
-        },
-        resetPassword: (params) => {
-            return fetchFn({
-                type: "collection",
-                slug,
-                method: "POST",
-                url: [slug, "reset-password"],
-                qs: "",
-                body: params,
-            });
-        },
-    };
-    return api;
-};
-
-export const createClient = <
-    T extends Config,
-    LOCALES,
-    USERCOLLECTION extends keyof T["collections"] = "users",
->(
-    options: FetchOptions,
-    userCollection?: keyof T["collections"]
-) =>
+export const createClient = <T extends Config, LOCALES>(options: FetchOptions) =>
     ({
         collections: createCollectionsProxy(options),
         globals: createGlobalsProxy(options),
-        auth: createAuthActions<T, USERCOLLECTION>(options, userCollection),
-    }) as RPC<T, LOCALES, USERCOLLECTION>;
+    }) as RPC<T, LOCALES>;

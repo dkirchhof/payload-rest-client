@@ -3,6 +3,11 @@ export type Config = {
     globals: { [k: string]: any };
 };
 
+export type DocWithAuth = {
+    email: string | null;
+    password: string | null;
+};
+
 export type Collections<T extends Config> = T["collections"];
 export type Globals<T extends Config> = T["globals"];
 
@@ -16,14 +21,15 @@ export type CollectionsApi<T, LOCALES> = {
     deleteById: (params: DeleteByIdParams<LOCALES>) => Promise<T>;
 };
 
-export type AuthApi<T> = {
+export type CollectionsWithAuthApi<T, LOCALES> = CollectionsApi<T, LOCALES> & {
     login: (params: LoginParams) => Promise<LoginResult<T>>;
     logout: (params: LogoutParams) => Promise<LogoutResult>;
     unlock: (params: UnlockParams) => Promise<UnlockResult>;
-    refreshToken: (params: RefreshTokenParams) => Promise<RefreshTokenResult<T>>;
+    "refresh-token": (params: RefreshTokenParams) => Promise<RefreshTokenResult>;
+    // verify
     me: (params: MeParams) => Promise<MeResult<T>>;
-    forgotPassword: (params: ForgotPasswordParams) => Promise<ForgotPasswordResult>;
-    resetPassword: (params: ResetPasswordParams) => Promise<ResetPasswordResult<T>>;
+    "forgot-password": (params: ForgotPasswordParams) => Promise<ForgotPasswordResult>;
+    "reset-password": (params: ResetPasswordParams) => Promise<ResetPasswordResult<T>>;
 };
 
 export type GlobalsApi<T, LOCALES> = {
@@ -31,14 +37,15 @@ export type GlobalsApi<T, LOCALES> = {
     update: (params: UpdateGlobalParams<T, LOCALES>) => Promise<T>;
 };
 
-export type RPC<T extends Config, LOCALES, USERCOLLECTION extends keyof T["collections"]> = {
+export type RPC<T extends Config, LOCALES> = {
     collections: {
-        [P in keyof Collections<T>]: CollectionsApi<Collections<T>[P], LOCALES>;
+        [P in keyof Collections<T>]: Collections<T>[P] extends DocWithAuth //{email:string,password:string}
+            ? CollectionsWithAuthApi<Collections<T>[P], LOCALES>
+            : CollectionsApi<Collections<T>[P], LOCALES>;
     };
     globals: {
         [P in keyof Globals<T>]: GlobalsApi<Globals<T>[P], LOCALES>;
     };
-    auth: AuthApi<T["collections"][USERCOLLECTION]>;
 };
 
 export type GetAdditionalFetchOptionsParams = {
@@ -184,34 +191,22 @@ export type UnlockResult = MessageResult;
 
 export type RefreshTokenParams = void;
 
-type Prettify<T> = {
-    [K in keyof T]: T[K];
-} & {};
-type User<T> = Prettify<
-    Omit<
-        T,
-        | "resetPasswordToken"
-        | "resetPasswordExpiration"
-        | "salt"
-        | "hash"
-        | "lockUntil"
-        | "password"
-    > & {
-        _strategy?: string;
-    }
->;
-export type RefreshTokenResult<T> = {
+export type RefreshTokenResult = {
     message: string;
     refreshedToken: string;
     exp: number;
-    user: User<T>;
+    user: {
+        id: string;
+        email: string;
+        collection: string;
+    };
 };
 
 export type MeParams = void;
 
 export type MeResult<T> = {
     collection: string;
-    user: User<T>;
+    user: T & { _strategy: string };
     token: string;
     exp: number;
 };
@@ -229,6 +224,6 @@ export type ResetPasswordParams = {
 
 export type ResetPasswordResult<T> = {
     message: string;
-    user: User<T>;
+    user: T;
     token: string;
 };
