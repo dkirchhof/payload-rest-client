@@ -1,12 +1,12 @@
 export type Config = {
-    collections: { [k: string]: any; };
-    globals: { [k: string]: any; };
+    collections: { [k: string]: any };
+    globals: { [k: string]: any };
 };
 
 export type DocWithAuth = {
-    email: string;
-    password: string;
-}
+    email: string | null;
+    password: string | null;
+};
 
 export type Collections<T extends Config> = T["collections"];
 export type Globals<T extends Config> = T["globals"];
@@ -39,9 +39,9 @@ export type GlobalsApi<T, LOCALES> = {
 
 export type RPC<T extends Config, LOCALES> = {
     collections: {
-        [P in keyof Collections<T>]: Collections<T>[P] extends DocWithAuth
-        ? CollectionsWithAuthApi<Collections<T>[P], LOCALES>
-        : CollectionsApi<Collections<T>[P], LOCALES>;
+        [P in keyof Collections<T>]: Collections<T>[P] extends DocWithAuth //{email:string,password:string}
+            ? CollectionsWithAuthApi<Collections<T>[P], LOCALES>
+            : CollectionsApi<Collections<T>[P], LOCALES>;
     };
     globals: {
         [P in keyof Globals<T>]: GlobalsApi<Globals<T>[P], LOCALES>;
@@ -68,24 +68,24 @@ export type MessageResult = {
 };
 
 export type Operand<T> =
-    | { equals: T; }
-    | { not_equals: T; }
-    | { greater_than: T; }
-    | { greater_than_equal: T; }
-    | { less_than: T; }
-    | { less_than_equal: T; }
-    | { like: string; }
-    | { contains: string; }
-    | { in: string; }
-    | { not_in: string; }
-    | { all: string; }
-    | { exists: boolean; }
-    | { near: string; }
+    | { equals: T }
+    | { not_equals: T }
+    | { greater_than: T }
+    | { greater_than_equal: T }
+    | { less_than: T }
+    | { less_than_equal: T }
+    | { like: string }
+    | { contains: string }
+    | { in: string }
+    | { not_in: string }
+    | { all: string }
+    | { exists: boolean }
+    | { near: string };
 
 export type Filter<T> =
-    | { [P in keyof T]?: Operand<T[P]>; }
-    | { and: Array<Filter<T>>; }
-    | { or: Array<Filter<T>>; }
+    | { [P in keyof T]?: Operand<T[P]> }
+    | { and: Array<Filter<T>> }
+    | { or: Array<Filter<T>> };
 
 export type BaseParams<LOCALES> = {
     depth?: number;
@@ -105,16 +105,16 @@ export type FindByIdParams<LOCALES> = BaseParams<LOCALES> & {
 };
 
 export type FindResult<T> = {
-    docs: T[]
-    totalDocs: number
-    limit: number
-    totalPages: number
-    page?: number
-    pagingCounter: number
-    hasPrevPage: boolean
-    hasNextPage: boolean
-    prevPage?: number | null | undefined
-    nextPage?: number | null | undefined
+    docs: T[];
+    totalDocs: number;
+    limit: number;
+    totalPages: number;
+    page?: number;
+    pagingCounter: number;
+    hasPrevPage: boolean;
+    hasNextPage: boolean;
+    prevPage?: number | null | undefined;
+    nextPage?: number | null | undefined;
 };
 
 export type CreateParams<T, LOCALES> = BaseParams<LOCALES> & {
@@ -206,7 +206,7 @@ export type MeParams = void;
 
 export type MeResult<T> = {
     collection: string;
-    user: T & { _strategy: string; };
+    user: T & { _strategy: string };
     token: string;
     exp: number;
 };
@@ -224,6 +224,6 @@ export type ResetPasswordParams = {
 
 export type ResetPasswordResult<T> = {
     message: string;
-    user: T; 
+    user: T;
     token: string;
 };
