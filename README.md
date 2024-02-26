@@ -66,6 +66,16 @@ console.log(users); // type of users is FindResult<User>
 - delete: (params?: DeleteParams<T, LOCALES>) => Promise<DeleteResult<T>>;
 - deleteById: (params: DeleteByIdParams<LOCALES>) => Promise<T>;
 
+### Collections with auth enabled (additional to above)
+
+- login: (params: LoginParams) => Promise<LoginResult<T>>;
+- logout: (params: LogoutParams) => Promise<LogoutResult>;
+- unlock: (params: UnlockParams) => Promise<UnlockResult>;
+- refresh-token: (params: RefreshTokenParams) => Promise<RefreshTokenResult>;
+- me: (params: MeParams) => Promise<MeResult<T>>;
+- forgot-password: (params: ForgotPasswordParams) => Promise<ForgotPasswordResult>;
+- reset-password: (params: ResetPasswordParams) => Promise<ResetPasswordResult<T>>;
+
 ### Globals
 
 - get: (params?: BaseParams<LOCALES>) => Promise<T>;
