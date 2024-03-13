@@ -1,10 +1,14 @@
-export const createQueryString = (where: any) => {
+export const createQueryString = (params: Object | undefined) => {
+    if (!params) {
+        return "";
+    }
+
     const encodeQuery = (key: string, value: any) => {
         // return `${key}=${encodeURIComponent(value)}`;
         return `${key}=${value}`;
     };
 
-    const buildQueryString = (obj: any, parentKey: string) => {
+    const buildQueryString = (obj: Object, parentKey: string) => {
         const parts: string[] = Object.entries(obj).map(([key, value]) => {
             const currentKey = parentKey ? `${parentKey}[${key}]` : key;
 
@@ -22,5 +26,5 @@ export const createQueryString = (where: any) => {
         return parts.join("&");
     };
 
-    return buildQueryString(where, "");
+    return buildQueryString(params, "");
 };
