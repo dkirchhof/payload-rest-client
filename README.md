@@ -4,7 +4,7 @@ A typesafe rest api client for the [payload cms](https://payloadcms.com).
 
 ## Quick Start 
 
-1. Assume you have a users collection with following fields:
+1. Assume you have a users (auth enabled) and a posts collection with following fields:
 
 ```ts
 interface User {
@@ -14,6 +14,12 @@ interface User {
     password: string;
     createdAt: string;
     updatedAt: string;
+}
+
+interface Post {
+    id: string;
+    title: string;
+    content: string;
 }
 ```
 
@@ -27,21 +33,34 @@ type Locales = "de" | "en";
 
 const client = createClient<Config, Locales>({
     apiUrl: "http://localhost:4000/api",
-    cache: "no-store",
 });
 ```
 
 3. Now you can use all available queries for all collections and globals in a typesafe way:
 
 ```ts
-const users = await client.collections.users.find({
-    sort: "name", // only top level keys (optionally prefixed with "-") of user allowed
+// if you wan't to use protected routes, use login api...
+const loginResponse = await client.collections.users.login({
+    email: process.env.PAYLOAD_API_EMAIL,
+    password: process.env.PAYLOAD_API_PASSWORD,
+});
+
+// ...and create another client with authorization header
+const protectedClient = createClient<Config, Locales>({
+    apiUrl: "http://localhost:4000/api",
+    headers: {
+        "Authorization": `Bearer ${loginResponse.token}`,
+    },
+});
+
+const posts = await protectedClient.collections.posts.find({
+    sort: "title", // only top level keys (optionally prefixed with "-") of Post allowed
     locale: "de", // only defined locales allowed
     limit: 10,
     page: 2,
 });
 
-console.log(users); // type of users is FindResult<User> 
+console.log(posts); // type of posts is FindResult<Post> 
 ```
 
 ## API
