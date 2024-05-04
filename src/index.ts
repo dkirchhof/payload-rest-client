@@ -112,6 +112,21 @@ const createCollectionsProxy = (options: FetchOptions) => {
                             body: doc,
                         });
                     },
+                    createDraft: (params) => {
+                        const { doc, ...rest } = params;
+
+                        return fetchFn({
+                            type: "collection",
+                            slug,
+                            method: "POST",
+                            url: [slug],
+                            qs: createQueryString({
+                                ...rest,
+                                draft: true,
+                            }),
+                            body: doc,
+                        });
+                    },
                     update: (params) => {
                         const { patch, ...rest } = params;
 

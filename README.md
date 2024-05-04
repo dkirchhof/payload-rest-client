@@ -61,6 +61,7 @@ console.log(users); // type of users is FindResult<User>
 - find: (params?: FindParams<T, LOCALES>) => Promise<FindResult<T>>;
 - findById: (params: FindByIdParams<LOCALES>) => Promise<T>;
 - create: (params: CreateParams<T, LOCALES>) => Promise<CreateResult<T>>;
+- createDraft: (params: CreateDraftParams<T, LOCALES>) => Promise<CreateDraftResult<T>>;
 - update: (params: UpdateParams<T, LOCALES>) => Promise<UpdateResult<T>>;
 - updateById: (params: UpdateByIdParams<T, LOCALES>) => Promise<UpdateByIdResult<T>>;
 - delete: (params?: DeleteParams<T, LOCALES>) => Promise<DeleteResult<T>>;

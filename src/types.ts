@@ -15,6 +15,7 @@ export type CollectionsApi<T, LOCALES> = {
     find: (params?: FindParams<T, LOCALES>) => Promise<FindResult<T>>;
     findById: (params: FindByIdParams<LOCALES>) => Promise<T>;
     create: (params: CreateParams<T, LOCALES>) => Promise<CreateResult<T>>;
+    createDraft: (params: CreateDraftParams<T, LOCALES>) => Promise<CreateDraftResult<T>>;
     update: (params: UpdateParams<T, LOCALES>) => Promise<UpdateResult<T>>;
     updateById: (params: UpdateByIdParams<T, LOCALES>) => Promise<UpdateByIdResult<T>>;
     delete: (params?: DeleteParams<T, LOCALES>) => Promise<DeleteResult<T>>;
@@ -118,6 +119,7 @@ export type FindResult<T> = {
 };
 
 export type CreateParams<T, LOCALES> = BaseParams<LOCALES> & {
+    draft?: false,
     doc: Omit<T, "id" | "createdAt" | "updatedAt"> & {
         id?: string;
         createdAt?: string;
@@ -128,6 +130,15 @@ export type CreateParams<T, LOCALES> = BaseParams<LOCALES> & {
 export type CreateResult<T> = {
     message: string;
     doc: T;
+};
+
+export type CreateDraftParams<T, LOCALES> = BaseParams<LOCALES> & {
+    doc: Partial<CreateParams<T, LOCALES>["doc"]>;
+};
+
+export type CreateDraftResult<T> = {
+    message: string;
+    doc: Partial<T>;
 };
 
 export type UpdateParams<T, LOCALES> = BaseParams<LOCALES> & {
