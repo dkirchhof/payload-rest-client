@@ -40,9 +40,9 @@ export type GlobalsApi<T, LOCALES> = {
 
 export type RPC<T extends Config, LOCALES> = {
     collections: {
-        [P in keyof Collections<T>]: Collections<T>[P] extends DocWithAuth //{email:string,password:string}
-            ? CollectionsWithAuthApi<Collections<T>[P], LOCALES>
-            : CollectionsApi<Collections<T>[P], LOCALES>;
+        [P in keyof Collections<T>]: Collections<T>[P] extends DocWithAuth
+        ? CollectionsWithAuthApi<Collections<T>[P], LOCALES>
+        : CollectionsApi<Collections<T>[P], LOCALES>;
     };
     globals: {
         [P in keyof Globals<T>]: GlobalsApi<Globals<T>[P], LOCALES>;
@@ -92,7 +92,7 @@ export type BaseParams<LOCALES> = {
     depth?: number;
     locale?: LOCALES;
     fallbackLocale?: LOCALES | "null" | "false" | "none";
-};
+} & { [p: string]: number };
 
 export type FindParams<T, LOCALES> = BaseParams<LOCALES> & {
     sort?: keyof T extends string ? keyof T | `-${keyof T}` : never;
