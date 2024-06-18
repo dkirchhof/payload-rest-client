@@ -92,7 +92,8 @@ export type BaseParams<LOCALES> = {
     depth?: number;
     locale?: LOCALES;
     fallbackLocale?: LOCALES | "null" | "false" | "none";
-} & { [p: string]: number };
+    [p: string]: any;
+};
 
 export type FindParams<T, LOCALES> = BaseParams<LOCALES> & {
     sort?: keyof T extends string ? keyof T | `-${keyof T}` : never;
