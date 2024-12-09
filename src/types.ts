@@ -4,8 +4,8 @@ export type Config = {
 };
 
 export type DocWithAuth = {
-    email: string | null;
-    password: string | null;
+    email: string;
+    password?: string | null;
 };
 
 export type Collections<T extends Config> = T["collections"];
