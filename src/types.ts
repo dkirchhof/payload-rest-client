@@ -97,6 +97,15 @@ export type Filter<T> =
     | { and: Array<Filter<T>> }
     | { or: Array<Filter<T>> };
 
+export type NoUndefinedField<T> = { [P in keyof T]-?: NoUndefinedField<NonNullable<T[P]>> };
+export type ExtractJoin<T extends { docs: any[]; }> = Exclude<T["docs"][number], string | number>;
+
+export type JoinParams<DOC extends Doc> = {
+    sort?: keyof DOC extends string ? keyof DOC | `-${keyof DOC}` : never;
+    where?: Filter<DOC>;
+    limit?: number;
+};
+
 export type BaseParams<LOCALES> = {
     depth?: number;
     locale?: LOCALES;
@@ -111,12 +120,22 @@ export type FindParams<CONFIG extends Config, LOCALES, DOC extends Doc, SELECT> 
     page?: number;
     select?: SELECT;
     populate?: Partial<CollectionsSelect<CONFIG>>;
+    joins?: {
+        [P in keyof NoUndefinedField<DOC>]?: NoUndefinedField<DOC>[P] extends { docs: any }
+        ? JoinParams<ExtractJoin<NoUndefinedField<DOC>[P]>>
+        : never;
+    };
 };
 
 export type FindByIdParams<CONFIG extends Config, LOCALES, DOC extends Doc, SELECT> = BaseParams<LOCALES> & {
     id: DOC["id"];
     select?: SELECT;
     populate?: Partial<CollectionsSelect<CONFIG>>;
+    joins?: {
+        [P in keyof NoUndefinedField<DOC>]?: NoUndefinedField<DOC>[P] extends { docs: any }
+        ? JoinParams<ExtractJoin<NoUndefinedField<DOC>[P]>>
+        : never;
+    };
 };
 
 export type FindResult<DOC extends Doc> = {

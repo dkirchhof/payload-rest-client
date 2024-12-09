@@ -32,10 +32,13 @@ export interface User {
 export interface Tag {
     id: number;
     name: string;
+    relatedUsers?: {
+        docs?: (string | User)[] | null;
+        hasNextPage?: boolean | null;
+    } | null;
     updatedAt: string;
     createdAt: string;
 }
-
 
 export interface Settings {
     id: string;
@@ -65,10 +68,10 @@ export interface TagsSelect<T extends boolean = true> {
 }
 
 export interface SettingsSelect<T extends boolean = true> {
-  test?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
+    test?: T;
+    updatedAt?: T;
+    createdAt?: T;
+    globalType?: T;
 }
 
 // end of generated types
