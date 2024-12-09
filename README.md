@@ -81,6 +81,7 @@ console.log(posts); // type of posts is FindResult<Post>
 
 - find: (params?: FindParams<T, LOCALES>) => Promise<FindResult<T>>;
 - findById: (params: FindByIdParams<LOCALES>) => Promise<T>;
+- count: (params: CountParams<T>) => Promise<CountResult>;
 - create: (params: CreateParams<T, LOCALES>) => Promise<CreateResult<T>>;
 - createDraft: (params: CreateDraftParams<T, LOCALES>) => Promise<CreateDraftResult<T>>;
 - update: (params: UpdateParams<T, LOCALES>) => Promise<UpdateResult<T>>;
