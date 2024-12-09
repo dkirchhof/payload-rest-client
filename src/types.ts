@@ -1,6 +1,12 @@
 export type Config = {
     collections: { [k: string]: any };
+    collectionsSelect: { [k: string]: any };
     globals: { [k: string]: any };
+    globalsSelect: { [k: string]: any };
+};
+
+export type Doc = {
+    id: string | number;
 };
 
 export type DocWithAuth = {
@@ -8,44 +14,47 @@ export type DocWithAuth = {
     password?: string | null;
 };
 
-export type Collections<T extends Config> = T["collections"];
-export type Globals<T extends Config> = T["globals"];
+export type Collections<CONFIG extends Config> = CONFIG["collections"];
+export type CollectionsSelect<CONFIG extends Config> = CONFIG["collectionsSelect"];
+export type Globals<CONFIG extends Config> = CONFIG["globals"];
+export type GlobalsSelect<CONFIG extends Config> = CONFIG["globalsSelect"];
 
-export type CollectionsApi<T, LOCALES> = {
-    find: (params?: FindParams<T, LOCALES>) => Promise<FindResult<T>>;
-    findById: (params: FindByIdParams<LOCALES>) => Promise<T>;
-    create: (params: CreateParams<T, LOCALES>) => Promise<CreateResult<T>>;
-    createDraft: (params: CreateDraftParams<T, LOCALES>) => Promise<CreateDraftResult<T>>;
-    update: (params: UpdateParams<T, LOCALES>) => Promise<UpdateResult<T>>;
-    updateById: (params: UpdateByIdParams<T, LOCALES>) => Promise<UpdateByIdResult<T>>;
-    delete: (params?: DeleteParams<T, LOCALES>) => Promise<DeleteResult<T>>;
-    deleteById: (params: DeleteByIdParams<LOCALES>) => Promise<T>;
+export type CollectionsApi<CONFIG extends Config, LOCALES, DOC extends Doc, SELECT> = {
+    find: (params?: FindParams<CONFIG, LOCALES, DOC, SELECT>) => Promise<FindResult<DOC>>;
+    findById: (params: FindByIdParams<CONFIG, LOCALES, DOC, SELECT>) => Promise<DOC>;
+    count: (params: CountParams<DOC>) => Promise<CountResult>;
+    create: (params: CreateParams<LOCALES, DOC>) => Promise<CreateResult<DOC>>;
+    createDraft: (params: CreateDraftParams<LOCALES, DOC>) => Promise<CreateDraftResult<DOC>>;
+    update: (params: UpdateParams<LOCALES, DOC>) => Promise<UpdateResult<DOC>>;
+    updateById: (params: UpdateByIdParams<LOCALES, DOC>) => Promise<UpdateByIdResult<DOC>>;
+    delete: (params?: DeleteParams<LOCALES, DOC>) => Promise<DeleteResult<DOC>>;
+    deleteById: (params: DeleteByIdParams<LOCALES>) => Promise<DOC>;
 };
 
-export type CollectionsWithAuthApi<T, LOCALES> = CollectionsApi<T, LOCALES> & {
-    login: (params: LoginParams) => Promise<LoginResult<T>>;
+export type CollectionsWithAuthApi<CONFIG extends Config, LOCALES, DOC extends Doc, SELECT> = CollectionsApi<CONFIG, LOCALES, DOC, SELECT> & {
+    login: (params: LoginParams) => Promise<LoginResult<DOC>>;
     logout: (params: LogoutParams) => Promise<LogoutResult>;
     unlock: (params: UnlockParams) => Promise<UnlockResult>;
     "refresh-token": (params: RefreshTokenParams) => Promise<RefreshTokenResult>;
     // verify
-    me: (params: MeParams) => Promise<MeResult<T>>;
+    me: (params: MeParams) => Promise<MeResult<DOC>>;
     "forgot-password": (params: ForgotPasswordParams) => Promise<ForgotPasswordResult>;
-    "reset-password": (params: ResetPasswordParams) => Promise<ResetPasswordResult<T>>;
+    "reset-password": (params: ResetPasswordParams) => Promise<ResetPasswordResult<DOC>>;
 };
 
-export type GlobalsApi<T, LOCALES> = {
-    get: (params?: BaseParams<LOCALES>) => Promise<T>;
-    update: (params: UpdateGlobalParams<T, LOCALES>) => Promise<T>;
+export type GlobalsApi<LOCALES, GLOBAL> = {
+    get: (params?: BaseParams<LOCALES>) => Promise<GLOBAL>;
+    update: (params: UpdateGlobalParams<LOCALES, GLOBAL>) => Promise<GLOBAL>;
 };
 
-export type RPC<T extends Config, LOCALES> = {
+export type RPC<CONFIG extends Config, LOCALES> = {
     collections: {
-        [P in keyof Collections<T>]: Collections<T>[P] extends DocWithAuth
-        ? CollectionsWithAuthApi<Collections<T>[P], LOCALES>
-        : CollectionsApi<Collections<T>[P], LOCALES>;
+        [P in keyof Collections<CONFIG>]: Collections<CONFIG>[P] extends DocWithAuth
+        ? CollectionsWithAuthApi<CONFIG, LOCALES, Collections<CONFIG>[P], CollectionsSelect<CONFIG>[P]>
+        : CollectionsApi<CONFIG, LOCALES, Collections<CONFIG>[P], CollectionsSelect<CONFIG>[P]>;
     };
     globals: {
-        [P in keyof Globals<T>]: GlobalsApi<Globals<T>[P], LOCALES>;
+        [P in keyof Globals<CONFIG>]: GlobalsApi<LOCALES, Globals<CONFIG>[P]>;
     };
 };
 
@@ -95,19 +104,23 @@ export type BaseParams<LOCALES> = {
     [p: string]: any;
 };
 
-export type FindParams<T, LOCALES> = BaseParams<LOCALES> & {
-    sort?: keyof T extends string ? keyof T | `-${keyof T}` : never;
-    where?: Filter<T>;
+export type FindParams<CONFIG extends Config, LOCALES, DOC extends Doc, SELECT> = BaseParams<LOCALES> & {
+    sort?: keyof DOC extends string ? keyof DOC | `-${keyof DOC}` : never;
+    where?: Filter<DOC>;
     limit?: number;
     page?: number;
+    select?: SELECT;
+    populate?: Partial<CollectionsSelect<CONFIG>>;
 };
 
-export type FindByIdParams<LOCALES> = BaseParams<LOCALES> & {
-    id: string;
+export type FindByIdParams<CONFIG extends Config, LOCALES, DOC extends Doc, SELECT> = BaseParams<LOCALES> & {
+    id: DOC["id"];
+    select?: SELECT;
+    populate?: Partial<CollectionsSelect<CONFIG>>;
 };
 
-export type FindResult<T> = {
-    docs: T[];
+export type FindResult<DOC extends Doc> = {
+    docs: DOC[];
     totalDocs: number;
     limit: number;
     totalPages: number;
@@ -119,63 +132,72 @@ export type FindResult<T> = {
     nextPage?: number | null | undefined;
 };
 
-export type CreateParams<T, LOCALES> = BaseParams<LOCALES> & {
+export type CountParams<DOC extends Doc> = {
+    where?: Filter<DOC>;
+    [p: string]: any;
+};
+
+export type CountResult = {
+    totalDocs: number;
+};
+
+export type CreateParams<LOCALES, DOC extends Doc> = BaseParams<LOCALES> & {
     draft?: false,
-    doc: Omit<T, "id" | "createdAt" | "updatedAt"> & {
+    doc: Omit<DOC, "id" | "createdAt" | "updatedAt"> & {
         id?: string;
         createdAt?: string;
         updatedAt?: string;
     };
 };
 
-export type CreateResult<T> = {
+export type CreateResult<DOC extends Doc> = {
     message: string;
-    doc: T;
+    doc: DOC;
 };
 
-export type CreateDraftParams<T, LOCALES> = BaseParams<LOCALES> & {
-    doc: Partial<CreateParams<T, LOCALES>["doc"]>;
+export type CreateDraftParams<LOCALES, DOC extends Doc> = BaseParams<LOCALES> & {
+    doc: Partial<CreateParams<LOCALES, DOC>["doc"]>;
 };
 
-export type CreateDraftResult<T> = {
+export type CreateDraftResult<DOC extends Doc> = {
     message: string;
-    doc: Partial<T>;
+    doc: Partial<DOC>;
 };
 
-export type UpdateParams<T, LOCALES> = BaseParams<LOCALES> & {
-    patch: Partial<T>;
-    where?: Filter<T>;
+export type UpdateParams<LOCALES, DOC extends Doc> = BaseParams<LOCALES> & {
+    patch: Partial<DOC>;
+    where?: Filter<DOC>;
 };
 
-export type UpdateResult<T> = {
-    docs: T[];
+export type UpdateResult<DOC extends Doc> = {
+    docs: DOC[];
     errors: string[];
 };
 
-export type UpdateByIdParams<T, LOCALES> = BaseParams<LOCALES> & {
+export type UpdateByIdParams<LOCALES, DOC extends Doc> = BaseParams<LOCALES> & {
     id: string;
-    patch: Partial<T>;
+    patch: Partial<DOC>;
 };
 
-export type UpdateGlobalParams<T, LOCALES> = BaseParams<LOCALES> & {
-    patch: Partial<T>;
+export type UpdateGlobalParams<LOCALES, GLOBAL> = BaseParams<LOCALES> & {
+    patch: Partial<GLOBAL>;
 };
 
-export type UpdateByIdResult<T> = {
+export type UpdateByIdResult<DOC extends Doc> = {
     message: string;
-    doc: T;
+    doc: DOC;
 };
 
-export type DeleteParams<T, LOCALES> = BaseParams<LOCALES> & {
-    where?: Filter<T>;
+export type DeleteParams<LOCALES, DOC extends Doc> = BaseParams<LOCALES> & {
+    where?: Filter<DOC>;
 };
 
 export type DeleteByIdParams<LOCALES> = BaseParams<LOCALES> & {
     id: string;
 };
 
-export type DeleteResult<T> = {
-    docs: T[];
+export type DeleteResult<DOC extends Doc> = {
+    docs: DOC[];
     errors: string[];
 };
 
@@ -184,9 +206,9 @@ export type LoginParams = {
     password: string;
 };
 
-export type LoginResult<T> = {
+export type LoginResult<DOC extends Doc> = {
     message: string;
-    user: T;
+    user: DOC;
     token: string;
     exp: number;
 };
@@ -216,9 +238,9 @@ export type RefreshTokenResult = {
 
 export type MeParams = void;
 
-export type MeResult<T> = {
+export type MeResult<DOC extends Doc> = {
     collection: string;
-    user: T & { _strategy: string };
+    user: DOC & { _strategy: string };
     token: string;
     exp: number;
 };
@@ -234,8 +256,8 @@ export type ResetPasswordParams = {
     password: string;
 };
 
-export type ResetPasswordResult<T> = {
+export type ResetPasswordResult<DOC extends Doc> = {
     message: string;
-    user: T;
+    user: DOC;
     token: string;
 };

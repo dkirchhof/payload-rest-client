@@ -5,9 +5,17 @@ import { createClient } from ".";
 interface Config {
     collections: {
         users: User;
+        tags: Tag;
+    };
+    collectionsSelect: {
+        users: UsersSelect<false> | UsersSelect<true>;
+        tags: TagsSelect<false> | TagsSelect<true>;
     };
     globals: {
         settings: Settings;
+    };
+    globalsSelect: {
+        settings: SettingsSelect<false> | SettingsSelect<true>;
     };
 }
 
@@ -15,14 +23,52 @@ export interface User {
     id: string;
     email: string;
     name: string;
-    password: string;
+    tags?: (string | Tag)[] | null;
+    password?: string | null;
     createdAt: string;
     updatedAt: string;
 }
 
+export interface Tag {
+    id: number;
+    name: string;
+    updatedAt: string;
+    createdAt: string;
+}
+
+
 export interface Settings {
     id: string;
     test: string;
+    updatedAt?: string | null;
+    createdAt?: string | null;
+}
+
+export interface UsersSelect<T extends boolean = true> {
+    updatedAt?: T;
+    createdAt?: T;
+    email?: T;
+    name?: T;
+    tags?: T;
+    resetPasswordToken?: T;
+    resetPasswordExpiration?: T;
+    salt?: T;
+    hash?: T;
+    loginAttempts?: T;
+    lockUntil?: T;
+}
+
+export interface TagsSelect<T extends boolean = true> {
+    name?: T;
+    updatedAt?: T;
+    createdAt?: T;
+}
+
+export interface SettingsSelect<T extends boolean = true> {
+  test?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 
 // end of generated types
