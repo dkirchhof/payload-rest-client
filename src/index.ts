@@ -79,7 +79,7 @@ const createCollectionsProxy = (options: FetchOptions) => {
         {},
         {
             get: (_, slug: string) => {
-                const api: CollectionsWithAuthApi<any, any, any, any> = {
+                const api: CollectionsWithAuthApi<any, any, any, any, any> = {
                     find: (params) => {
                         return fetchFn({
                             type: "collection",
