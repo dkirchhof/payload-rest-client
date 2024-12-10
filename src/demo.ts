@@ -7,6 +7,11 @@ interface Config {
         users: User;
         tags: Tag;
     };
+    collectionsJoins: {
+        tags: {
+            relatedUsers: 'users';
+        };
+    };
     collectionsSelect: {
         users: UsersSelect<false> | UsersSelect<true>;
         tags: TagsSelect<false> | TagsSelect<true>;

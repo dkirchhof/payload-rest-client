@@ -1,6 +1,7 @@
 export type Config = {
     collections: { [k: string]: any };
     collectionsSelect: { [k: string]: any };
+    collectionsJoins: { [k: string]: { [k: string]: string; } };
     globals: { [k: string]: any };
     globalsSelect: { [k: string]: any };
 };
@@ -15,13 +16,14 @@ export type DocWithAuth = {
 };
 
 export type Collections<CONFIG extends Config> = CONFIG["collections"];
+export type CollectionsJoins<CONFIG extends Config> = CONFIG["collectionsJoins"];
 export type CollectionsSelect<CONFIG extends Config> = CONFIG["collectionsSelect"];
 export type Globals<CONFIG extends Config> = CONFIG["globals"];
 export type GlobalsSelect<CONFIG extends Config> = CONFIG["globalsSelect"];
 
-export type CollectionsApi<CONFIG extends Config, LOCALES, DOC extends Doc, SELECT> = {
-    find: (params?: FindParams<CONFIG, LOCALES, DOC, SELECT>) => Promise<FindResult<DOC>>;
-    findById: (params: FindByIdParams<CONFIG, LOCALES, DOC, SELECT>) => Promise<DOC>;
+export type CollectionsApi<CONFIG extends Config, LOCALES, DOC extends Doc, JOINS, SELECT> = {
+    find: (params?: FindParams<CONFIG, LOCALES, DOC, JOINS, SELECT>) => Promise<FindResult<DOC>>;
+    findById: (params: FindByIdParams<CONFIG, LOCALES, DOC, JOINS, SELECT>) => Promise<DOC>;
     count: (params: CountParams<DOC>) => Promise<CountResult>;
     create: (params: CreateParams<LOCALES, DOC>) => Promise<CreateResult<DOC>>;
     createDraft: (params: CreateDraftParams<LOCALES, DOC>) => Promise<CreateDraftResult<DOC>>;
@@ -31,7 +33,7 @@ export type CollectionsApi<CONFIG extends Config, LOCALES, DOC extends Doc, SELE
     deleteById: (params: DeleteByIdParams<LOCALES>) => Promise<DOC>;
 };
 
-export type CollectionsWithAuthApi<CONFIG extends Config, LOCALES, DOC extends Doc, SELECT> = CollectionsApi<CONFIG, LOCALES, DOC, SELECT> & {
+export type CollectionsWithAuthApi<CONFIG extends Config, LOCALES, DOC extends Doc, JOINS, SELECT> = CollectionsApi<CONFIG, LOCALES, DOC, JOINS, SELECT> & {
     login: (params: LoginParams) => Promise<LoginResult<DOC>>;
     logout: (params: LogoutParams) => Promise<LogoutResult>;
     unlock: (params: UnlockParams) => Promise<UnlockResult>;
@@ -50,8 +52,8 @@ export type GlobalsApi<LOCALES, GLOBAL> = {
 export type RPC<CONFIG extends Config, LOCALES> = {
     collections: {
         [P in keyof Collections<CONFIG>]: Collections<CONFIG>[P] extends DocWithAuth
-        ? CollectionsWithAuthApi<CONFIG, LOCALES, Collections<CONFIG>[P], CollectionsSelect<CONFIG>[P]>
-        : CollectionsApi<CONFIG, LOCALES, Collections<CONFIG>[P], CollectionsSelect<CONFIG>[P]>;
+        ? CollectionsWithAuthApi<CONFIG, LOCALES, Collections<CONFIG>[P], CollectionsJoins<CONFIG>[P], CollectionsSelect<CONFIG>[P]>
+        : CollectionsApi<CONFIG, LOCALES, Collections<CONFIG>[P], CollectionsJoins<CONFIG>[P], CollectionsSelect<CONFIG>[P]>;
     };
     globals: {
         [P in keyof Globals<CONFIG>]: GlobalsApi<LOCALES, Globals<CONFIG>[P]>;
@@ -113,7 +115,7 @@ export type BaseParams<LOCALES> = {
     [p: string]: any;
 };
 
-export type FindParams<CONFIG extends Config, LOCALES, DOC extends Doc, SELECT> = BaseParams<LOCALES> & {
+export type FindParams<CONFIG extends Config, LOCALES, DOC extends Doc, JOINS, SELECT> = BaseParams<LOCALES> & {
     sort?: keyof DOC extends string ? keyof DOC | `-${keyof DOC}` : never;
     where?: Filter<DOC>;
     limit?: number;
@@ -121,19 +123,19 @@ export type FindParams<CONFIG extends Config, LOCALES, DOC extends Doc, SELECT> 
     select?: SELECT;
     populate?: Partial<CollectionsSelect<CONFIG>>;
     joins?: {
-        [P in keyof NoUndefinedField<DOC>]?: NoUndefinedField<DOC>[P] extends { docs: any }
-        ? JoinParams<ExtractJoin<NoUndefinedField<DOC>[P]>>
+        [P in keyof JOINS]?: JOINS[P] extends keyof Collections<CONFIG>
+        ? JoinParams<Collections<CONFIG>[JOINS[P]]>
         : never;
     };
 };
 
-export type FindByIdParams<CONFIG extends Config, LOCALES, DOC extends Doc, SELECT> = BaseParams<LOCALES> & {
+export type FindByIdParams<CONFIG extends Config, LOCALES, DOC extends Doc, JOINS, SELECT> = BaseParams<LOCALES> & {
     id: DOC["id"];
     select?: SELECT;
     populate?: Partial<CollectionsSelect<CONFIG>>;
     joins?: {
-        [P in keyof NoUndefinedField<DOC>]?: NoUndefinedField<DOC>[P] extends { docs: any }
-        ? JoinParams<ExtractJoin<NoUndefinedField<DOC>[P]>>
+        [P in keyof JOINS]?: JOINS[P] extends keyof Collections<CONFIG>
+        ? JoinParams<Collections<CONFIG>[JOINS[P]]>
         : never;
     };
 };
