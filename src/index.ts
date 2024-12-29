@@ -2,6 +2,8 @@ import { ForbiddenError, NotFoundError, UnauthorizedError } from "./errors";
 import { createQueryString } from "./qs";
 import { CollectionsWithAuthApi, Config, FetchOptions, GlobalsApi, RPC } from "./types";
 
+export * from "./errors";
+
 const parseData = async (res: Response): Promise<{ data: any; asText: string }> => {
     if (res.headers.get("content-type")?.startsWith("application/json")) {
         const json = await res.json();
