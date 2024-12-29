@@ -19,8 +19,8 @@ const parseData = async (res: Response): Promise<{ data: any; asText: string }> 
 };
 
 type FetchParams = {
-    type: "collection" | "global";
-    slug: string;
+    type?: "collection" | "global";
+    slug?: string;
     method: "GET" | "POST" | "PATCH" | "DELETE";
     url: string[];
     qs: string | null;
@@ -295,8 +295,18 @@ const createGlobalsProxy = (options: FetchOptions) => {
     );
 };
 
-export const createClient = <T extends Config, LOCALES>(options: FetchOptions) =>
-    ({
-        collections: createCollectionsProxy(options),
-        globals: createGlobalsProxy(options),
-    }) as RPC<T, LOCALES>;
+const createAccessApi = (options: FetchOptions) => {
+    const fetchFn = fetchFactory(options);
+
+    return () => fetchFn({
+        method: "GET",
+        url: ["access"],
+        qs: null,
+    });
+};
+
+export const createClient = <T extends Config, LOCALES>(options: FetchOptions) => ({
+    collections: createCollectionsProxy(options),
+    globals: createGlobalsProxy(options),
+    access: createAccessApi(options),
+}) as RPC<T, LOCALES>;

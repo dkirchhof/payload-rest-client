@@ -84,7 +84,7 @@ export interface SettingsSelect<T extends boolean = true> {
 type Locales = "de" | "en";
 
 const client = createClient<Config, Locales>({
-    apiUrl: "http://localhost:4000/api",
+    apiUrl: "http://localhost:3000/api",
     cache: "no-store",
     debug: true,
     getAdditionalFetchOptions: (params) => {
@@ -97,74 +97,78 @@ const client = createClient<Config, Locales>({
 });
 
 const test = async () => {
-    // collections
+    // // collections
 
-    const users1 = await client.collections.users.find({
-        sort: "-email",
-        locale: "de",
-    });
+    // const users1 = await client.collections.users.find({
+    //     sort: "-email",
+    //     locale: "de",
+    // });
 
-    console.log("##### all users #####")
-    console.log(users1);
+    // console.log("##### all users #####")
+    // console.log(users1);
 
-    const newUser = await client.collections.users.create({
-        doc: { name: "hans", email: "test@test.de", password: "password" },
-    });
+    // const newUser = await client.collections.users.create({
+    //     doc: { name: "hans", email: "test@test.de", password: "password" },
+    // });
 
-    console.log("##### new user #####")
-    console.log(newUser);
+    // console.log("##### new user #####")
+    // console.log(newUser);
 
-    const updatedUsers = await client.collections.users.update({
-        patch: { name: "new name" },
-        where: { email: { equals: "test@test.de" } },
-    });
+    // const updatedUsers = await client.collections.users.update({
+    //     patch: { name: "new name" },
+    //     where: { email: { equals: "test@test.de" } },
+    // });
 
-    console.log("##### updated users #####")
-    console.log(updatedUsers);
+    // console.log("##### updated users #####")
+    // console.log(updatedUsers);
 
-    const updatedUser = await client.collections.users.updateById({
-        id: newUser.doc.id,
-        patch: { name: "next new name" },
-    });
+    // const updatedUser = await client.collections.users.updateById({
+    //     id: newUser.doc.id,
+    //     patch: { name: "next new name" },
+    // });
 
-    console.log("##### updated user #####")
-    console.log(updatedUser);
+    // console.log("##### updated user #####")
+    // console.log(updatedUser);
 
-    const deletedUsers = await client.collections.users.delete({
-        where: {
-            or: [
-                { id: { equals: "foobar" } },
-                { email: { equals: "foobar" } },
-            ],
-        },
-    });
+    // const deletedUsers = await client.collections.users.delete({
+    //     where: {
+    //         or: [
+    //             { id: { equals: "foobar" } },
+    //             { email: { equals: "foobar" } },
+    //         ],
+    //     },
+    // });
 
-    console.log("##### deleted users #####")
-    console.log(deletedUsers);
+    // console.log("##### deleted users #####")
+    // console.log(deletedUsers);
 
-    const deletedUser = await client.collections.users.deleteById({
-        id: newUser.doc.id,
-    });
+    // const deletedUser = await client.collections.users.deleteById({
+    //     id: newUser.doc.id,
+    // });
 
-    console.log("##### deleted user #####")
-    console.log(deletedUser);
+    // console.log("##### deleted user #####")
+    // console.log(deletedUser);
 
-    const users2 = await client.collections.users.find();
+    // const users2 = await client.collections.users.find();
 
-    console.log("##### all users #####")
-    console.log(users2);
+    // console.log("##### all users #####")
+    // console.log(users2);
 
-    // globals
+    // // globals
 
-    const settings = await client.globals.settings.get()
+    // const settings = await client.globals.settings.get()
 
-    console.log("##### settings #####")
-    console.log(settings);
+    // console.log("##### settings #####")
+    // console.log(settings);
 
-    const updatedSettings = await client.globals.settings.update({ patch: { test: "hello" } })
+    // const updatedSettings = await client.globals.settings.update({ patch: { test: "hello" } })
 
-    console.log("##### updated settings #####")
-    console.log(updatedSettings);
+    // console.log("##### updated settings #####")
+    // console.log(updatedSettings);
+
+
+    const x = await client.access();
+    console.log(x)
 };
 
 test();

@@ -103,3 +103,25 @@ console.log(posts); // type of posts is FindResult<Post>
 
 - get: (params?: BaseParams<LOCALES>) => Promise<T>;
 - update: (params: UpdateGlobalParams<T, LOCALES>) => Promise<T>;
+
+### Others
+
+- access: () => Promise<AccessResult>;
+
+## Changelog
+
+### v 3.0.2
+
+- Export error types
+- Added access api
+
+### v 3.0.1
+
+- Better type inference for joins
+
+### v 3.0.0
+
+- Payload 3 (for Payload 2 use older versions)
+- Added `select`, `populate` and `join` params
+- Added `count` api
+

@@ -58,11 +58,12 @@ export type RPC<CONFIG extends Config, LOCALES> = {
     globals: {
         [P in keyof Globals<CONFIG>]: GlobalsApi<LOCALES, Globals<CONFIG>[P]>;
     };
+    access: AccessApi<Collections<CONFIG>, Globals<CONFIG>>;
 };
 
 export type GetAdditionalFetchOptionsParams = {
-    type: "collection" | "global";
-    slug: string;
+    type?: "collection" | "global";
+    slug?: string;
     method: string;
     url: string;
 };
@@ -99,8 +100,8 @@ export type Filter<T> =
     | { and: Array<Filter<T>> }
     | { or: Array<Filter<T>> };
 
-export type NoUndefinedField<T> = { [P in keyof T]-?: NoUndefinedField<NonNullable<T[P]>> };
-export type ExtractJoin<T extends { docs: any[]; }> = Exclude<T["docs"][number], string | number>;
+// export type NoUndefinedField<T> = { [P in keyof T]-?: NoUndefinedField<NonNullable<T[P]>> };
+// export type ExtractJoin<T extends { docs: any[]; }> = Exclude<T["docs"][number], string | number>;
 
 export type JoinParams<DOC extends Doc> = {
     sort?: keyof DOC extends string ? keyof DOC | `-${keyof DOC}` : never;
@@ -282,3 +283,46 @@ export type ResetPasswordResult<DOC extends Doc> = {
     user: DOC;
     token: string;
 };
+
+// access api
+
+type JoinField = {
+    // docs?: any[] | null; 
+    hasNextPage?: boolean | null;
+};
+
+type AccessSettings = {
+    create?: true;
+    read?: true;
+    update?: true;
+};
+
+type MapFieldsToAccessSettings<T> = {
+    [P in keyof T]-?: P extends "id"
+        ? never
+        : T[P] extends JoinField
+            ? true | AccessSettings
+            : T[P] extends object | undefined
+                ? MapFieldsToAccessSettings<T[P]>
+                : true | AccessSettings
+};
+
+type MapCollectionToAccessSettings<T> = {
+    fields: true | MapFieldsToAccessSettings<T>;
+    create?: true;
+    read?: true;
+    update?: true;
+    delete?: true;
+};
+
+type MapGlobalsToAccessSettings<T> = {
+    fields: true | MapFieldsToAccessSettings<T>;
+    read?: true;
+    update?: true;
+};
+
+type AccessResult<COLLECTIONS, GLOBALS>
+    = { [P in keyof COLLECTIONS]: MapCollectionToAccessSettings<COLLECTIONS[P]> }
+    & { [P in keyof GLOBALS]: MapGlobalsToAccessSettings<GLOBALS[P]> };
+
+type AccessApi<COLLECTIONS, GLOBALS> = () => Promise<AccessResult<COLLECTIONS, GLOBALS>>;
