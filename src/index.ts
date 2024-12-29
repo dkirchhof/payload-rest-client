@@ -38,7 +38,9 @@ const fetchFactory = (options: FetchOptions) => async (params: FetchParams) => {
         url: fullUrl,
     });
 
-    const res = await fetch(fullUrl, {
+    const fetchFn = options.customFetchFn || fetch;
+
+    const res = await fetchFn(fullUrl, {
         method: params.method,
         cache: options.cache,
         headers: {

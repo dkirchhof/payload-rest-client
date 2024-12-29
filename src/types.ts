@@ -74,6 +74,7 @@ export type FetchOptions = {
     headers?: HeadersInit;
     debug?: boolean;
     getAdditionalFetchOptions?: (params: GetAdditionalFetchOptionsParams) => any;
+    customFetchFn?: typeof fetch;
 };
 
 export type MessageResult = {

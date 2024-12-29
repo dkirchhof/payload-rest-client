@@ -84,7 +84,7 @@ export interface SettingsSelect<T extends boolean = true> {
 type Locales = "de" | "en";
 
 const client = createClient<Config, Locales>({
-    apiUrl: "http://localhost:4000/api",
+    apiUrl: "http://localhost:3000/api",
     cache: "no-store",
     debug: true,
     getAdditionalFetchOptions: (params) => {
@@ -93,6 +93,11 @@ const client = createClient<Config, Locales>({
                 next: { tags: [params.slug] },
             };
         }
+    },
+    customFetchFn: (input, init) => {
+        console.log("custom fetch");
+
+        return fetch(input, init);
     },
 });
 
@@ -165,7 +170,6 @@ const test = async () => {
 
     console.log("##### updated settings #####")
     console.log(updatedSettings);
-
 
     // others
 

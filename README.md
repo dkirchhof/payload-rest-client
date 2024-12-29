@@ -75,7 +75,8 @@ console.log(posts); // type of posts is FindResult<Post>
 - cache?: RequestCache;
 - headers?: HeadersInit;
 - debug?: boolean;
-- getAdditionalFetchOptions?: (params: GetAdditionalFetchOptionsParams) => any
+- getAdditionalFetchOptions?: (params: GetAdditionalFetchOptionsParams) => any;
+- customFetchFn? (input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 
 ### Collections
 
@@ -109,6 +110,10 @@ console.log(posts); // type of posts is FindResult<Post>
 - access: () => Promise<AccessResult>;
 
 ## Changelog
+
+### v 3.0.3
+
+- Added option to use custom fetch function
 
 ### v 3.0.2
 
