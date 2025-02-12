@@ -1,8 +1,8 @@
 import { fetchFactory } from "./fetch";
 import { createQueryString } from "./qs";
-import { FetchOptions, GlobalsApi } from "./types";
+import { ClientOptions, GlobalsApi } from "./types";
 
-export const createGlobalsProxy = (options: FetchOptions) => {
+export const createGlobalsProxy = (options: ClientOptions) => {
     const fetchFn = fetchFactory(options);
 
     return new Proxy(
@@ -15,7 +15,7 @@ export const createGlobalsProxy = (options: FetchOptions) => {
                             type: "global",
                             slug,
                             method: "GET",
-                            url: ["globals", slug],
+                            path: ["globals", slug],
                             qs: createQueryString(params),
                         });
                     },
@@ -26,7 +26,7 @@ export const createGlobalsProxy = (options: FetchOptions) => {
                             type: "global",
                             slug,
                             method: "POST",
-                            url: ["globals", slug],
+                            path: ["globals", slug],
                             qs: createQueryString(rest),
                             body: patch,
                         });

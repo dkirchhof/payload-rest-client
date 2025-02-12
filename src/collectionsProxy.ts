@@ -1,8 +1,8 @@
 import { fetchFactory } from "./fetch";
 import { createQueryString } from "./qs";
-import { CollectionsWithAuthApi, FetchOptions } from "./types";
+import { CollectionsWithAuthApi, ClientOptions } from "./types";
 
-export const createCollectionsProxy = (options: FetchOptions) => {
+export const createCollectionsProxy = (options: ClientOptions) => {
     const fetchFn = fetchFactory(options);
 
     return new Proxy(
@@ -15,7 +15,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "GET",
-                            url: [slug],
+                            path: [slug],
                             qs: createQueryString(params),
                         });
                     },
@@ -26,7 +26,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "GET",
-                            url: [slug, id],
+                            path: [slug, id],
                             qs: createQueryString(rest),
                         });
                     },
@@ -35,7 +35,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "GET",
-                            url: [slug, "count"],
+                            path: [slug, "count"],
                             qs: createQueryString(params),
                         });
                     },
@@ -46,7 +46,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "POST",
-                            url: [slug],
+                            path: [slug],
                             qs: createQueryString(rest),
                             body: doc,
                         });
@@ -58,7 +58,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "POST",
-                            url: [slug],
+                            path: [slug],
                             qs: createQueryString({
                                 ...rest,
                                 draft: true,
@@ -73,7 +73,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "PATCH",
-                            url: [slug],
+                            path: [slug],
                             qs: createQueryString(rest),
                             body: patch,
                         });
@@ -85,7 +85,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "PATCH",
-                            url: [slug, id],
+                            path: [slug, id],
                             qs: createQueryString(rest),
                             body: patch,
                         });
@@ -95,7 +95,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "DELETE",
-                            url: [slug],
+                            path: [slug],
                             qs: createQueryString(params),
                         });
                     },
@@ -106,7 +106,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "DELETE",
-                            url: [slug, id],
+                            path: [slug, id],
                             qs: createQueryString(rest),
                         });
                     },
@@ -116,7 +116,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "POST",
-                            url: [slug, "login"],
+                            path: [slug, "login"],
                             qs: "",
                             body: params,
                         });
@@ -126,7 +126,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "POST",
-                            url: [slug, "logout"],
+                            path: [slug, "logout"],
                             qs: "",
                         });
                     },
@@ -135,7 +135,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "POST",
-                            url: [slug, "unlock"],
+                            path: [slug, "unlock"],
                             qs: "",
                             body: params,
                         });
@@ -145,7 +145,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "POST",
-                            url: [slug, "refresh-token"],
+                            path: [slug, "refresh-token"],
                             qs: "",
                         });
                     },
@@ -154,7 +154,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "GET",
-                            url: [slug, "me"],
+                            path: [slug, "me"],
                             qs: "",
                         });
                     },
@@ -163,7 +163,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "POST",
-                            url: [slug, "forgot-password"],
+                            path: [slug, "forgot-password"],
                             qs: "",
                             body: params,
                         });
@@ -173,7 +173,7 @@ export const createCollectionsProxy = (options: FetchOptions) => {
                             type: "collection",
                             slug,
                             method: "POST",
-                            url: [slug, "reset-password"],
+                            path: [slug, "reset-password"],
                             qs: "",
                             body: params,
                         });

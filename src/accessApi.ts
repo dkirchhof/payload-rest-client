@@ -1,12 +1,12 @@
 import { fetchFactory } from "./fetch";
-import { FetchOptions } from "./types";
+import { ClientOptions } from "./types";
 
-export const createAccessApi = (options: FetchOptions) => {
+export const createAccessApi = (options: ClientOptions) => {
     const fetchFn = fetchFactory(options);
 
     return () => fetchFn({
         method: "GET",
-        url: ["access"],
+        path: ["access"],
         qs: null,
     });
 };

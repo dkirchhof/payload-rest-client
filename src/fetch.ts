@@ -1,11 +1,11 @@
 import { ForbiddenError, NotFoundError, UnauthorizedError } from "./errors";
-import { FetchOptions } from "./types";
+import { ClientOptions } from "./types";
 
 type FetchParams = {
     type?: "collection" | "global";
     slug?: string;
     method: "GET" | "POST" | "PATCH" | "DELETE";
-    url: string[];
+    path: string | string[];
     qs: string | null;
     body?: any;
 };
@@ -24,9 +24,10 @@ const parseData = async (res: Response): Promise<{ data: any; asText: string }> 
     }
 };
 
-export const fetchFactory = (options: FetchOptions) => async (params: FetchParams) => {
+export const fetchFactory = (options: ClientOptions) => async (params: FetchParams) => {
+    const path = Array.isArray(params.path) ? params.path.join("/") : params.path;
     const qsString = params.qs ? `?${params.qs}` : "";
-    const fullUrl = `${options.apiUrl}/${params.url.join("/")}${qsString}`;
+    const fullUrl = `${options.apiUrl}/${path}${qsString}`;
 
     const additionalFetchOptions = options.getAdditionalFetchOptions?.({
         type: params.type,

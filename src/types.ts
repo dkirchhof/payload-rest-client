@@ -68,7 +68,7 @@ export type GetAdditionalFetchOptionsParams = {
     url: string;
 };
 
-export type FetchOptions = {
+export type ClientOptions = {
     apiUrl: string;
     cache?: RequestCache;
     headers?: HeadersInit;
