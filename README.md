@@ -65,6 +65,58 @@ const posts = await protectedClient.collections.posts.find({
 console.log(posts); // type of posts is FindResult<Post> 
 ```
 
+## Custom Endpoints
+
+1. Define input and output types for alle custom endpoints:
+
+```ts
+import { CustomEndpoint } from "payload-rest-client";
+
+/**
+ * shape of generic CustomEndpoint type
+ *
+ * type Input = {
+ *     params?: Record<string, string>;
+ *     query?: Record<string, any>;
+ *     body?: any;
+ * };
+ *
+ * type Output = any;
+ *
+ * type CustomEndpoint<Input, Output>;
+ */
+
+type CustomEndpoints = {
+    greet: CustomEndpoint<{
+        params: { name: string };
+        query: { locale: Locales };
+    }, string>,
+};
+```
+
+2. Add it to `createClient` function:
+
+```diff
+-const client = createClient<Config, Locales>({
+-    apiUrl: "http://localhost:4000/api",
+-});
++const client = createClient<Config, Locales, CustomEndpoints>({
++    apiUrl: "http://localhost:4000/api",
++    customEndpoints: {
++        greet: { method: "GET", path: params => `hello/${params.name}` },
++    },
++});
+```
+
+3. Call custom endpoints like this:
+
+```ts
+const greeting = await client.custom.greet({
+    params: { name: "John Doe" },
+    query: { locale: "en" },
+});
+```
+
 ## API
 
 [Full documentation of the rest api](https://payloadcms.com/docs/rest-api/overview)
@@ -110,6 +162,10 @@ console.log(posts); // type of posts is FindResult<Post>
 - access: () => Promise<AccessResult>;
 
 ## Changelog
+
+### v 3.0.3
+
+- Added custom endpoints
 
 ### v 3.0.3
 

@@ -1,3 +1,5 @@
+import { CE_To_CEFactory, CustomEndpoints } from "./customEndpoints";
+
 export type Config = {
     collections: { [k: string]: any };
     collectionsSelect: { [k: string]: any };
@@ -49,7 +51,7 @@ export type GlobalsApi<LOCALES, GLOBAL> = {
     update: (params: UpdateGlobalParams<LOCALES, GLOBAL>) => Promise<GLOBAL>;
 };
 
-export type RPC<CONFIG extends Config, LOCALES> = {
+export type RPC<CONFIG extends Config, LOCALES, CE> = {
     collections: {
         [P in keyof Collections<CONFIG>]: Collections<CONFIG>[P] extends DocWithAuth
         ? CollectionsWithAuthApi<CONFIG, LOCALES, Collections<CONFIG>[P], CollectionsJoins<CONFIG>[P], CollectionsSelect<CONFIG>[P]>
@@ -59,22 +61,24 @@ export type RPC<CONFIG extends Config, LOCALES> = {
         [P in keyof Globals<CONFIG>]: GlobalsApi<LOCALES, Globals<CONFIG>[P]>;
     };
     access: AccessApi<Collections<CONFIG>, Globals<CONFIG>>;
+    custom: CE;
 };
 
 export type GetAdditionalFetchOptionsParams = {
-    type?: "collection" | "global";
+    type?: "collection" | "global" | "custom";
     slug?: string;
     method: string;
     url: string;
 };
 
-export type ClientOptions = {
+export type ClientOptions<CE extends CustomEndpoints = any> = {
     apiUrl: string;
     cache?: RequestCache;
     headers?: HeadersInit;
     debug?: boolean;
     getAdditionalFetchOptions?: (params: GetAdditionalFetchOptionsParams) => any;
     customFetchFn?: typeof fetch;
+    customEndpoints?: CE_To_CEFactory<CE>;
 };
 
 export type MessageResult = {

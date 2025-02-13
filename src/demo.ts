@@ -1,4 +1,4 @@
-import { createClient } from ".";
+import { CustomEndpoint, createClient } from ".";
 
 // generated from payload
 
@@ -83,7 +83,14 @@ export interface SettingsSelect<T extends boolean = true> {
 
 type Locales = "de" | "en";
 
-const client = createClient<Config, Locales>({
+type CustomEndpoints = {
+    greet: CustomEndpoint<{
+        params: { name: string };
+        query: { locale: Locales };
+    }, string>,
+};
+
+const client = createClient<Config, Locales, CustomEndpoints>({
     apiUrl: "http://localhost:3000/api",
     cache: "no-store",
     debug: true,
@@ -94,10 +101,14 @@ const client = createClient<Config, Locales>({
             };
         }
     },
-    customFetchFn: (input, init) => {
+    customFetchFn: (url, init) => {
         console.log("custom fetch");
+        console.log(url, init)
 
-        return fetch(input, init);
+        return fetch(url, init);
+    },
+    customEndpoints: {
+        greet: { method: "GET", path: p => `hello/${p.name}` },
     },
 });
 
@@ -109,14 +120,14 @@ const test = async () => {
         locale: "de",
     });
 
-    console.log("##### all users #####")
+    console.log("##### all users #####");
     console.log(users1);
 
     const newUser = await client.collections.users.create({
         doc: { name: "hans", email: "test@test.de", password: "password" },
     });
 
-    console.log("##### new user #####")
+    console.log("##### new user #####");
     console.log(newUser);
 
     const updatedUsers = await client.collections.users.update({
@@ -124,7 +135,7 @@ const test = async () => {
         where: { email: { equals: "test@test.de" } },
     });
 
-    console.log("##### updated users #####")
+    console.log("##### updated users #####");
     console.log(updatedUsers);
 
     const updatedUser = await client.collections.users.updateById({
@@ -132,7 +143,7 @@ const test = async () => {
         patch: { name: "next new name" },
     });
 
-    console.log("##### updated user #####")
+    console.log("##### updated user #####");
     console.log(updatedUser);
 
     const deletedUsers = await client.collections.users.delete({
@@ -144,39 +155,49 @@ const test = async () => {
         },
     });
 
-    console.log("##### deleted users #####")
+    console.log("##### deleted users #####");
     console.log(deletedUsers);
 
     const deletedUser = await client.collections.users.deleteById({
         id: newUser.doc.id,
     });
 
-    console.log("##### deleted user #####")
+    console.log("##### deleted user #####");
     console.log(deletedUser);
 
     const users2 = await client.collections.users.find();
 
-    console.log("##### all users #####")
+    console.log("##### all users #####");
     console.log(users2);
 
     // globals
 
-    const settings = await client.globals.settings.get()
+    const settings = await client.globals.settings.get();
 
-    console.log("##### settings #####")
+    console.log("##### settings #####");
     console.log(settings);
 
-    const updatedSettings = await client.globals.settings.update({ patch: { test: "hello" } })
+    const updatedSettings = await client.globals.settings.update({ patch: { test: "hello" } });
 
-    console.log("##### updated settings #####")
+    console.log("##### updated settings #####");
     console.log(updatedSettings);
 
     // others
 
     const access = await client.access();
 
-    console.log("##### get access config #####")
-    console.log(access)
+    console.log("##### get access config #####");
+    console.log(access);
+
+    // custom endpoints
+
+    const greeting = await client.custom.greet({
+        params: { name: "John Doe" },
+        query: { locale: "en" },
+    });
+
+    console.log("##### custom endpoint #####");
+    console.log(greeting);
 };
 
 test();

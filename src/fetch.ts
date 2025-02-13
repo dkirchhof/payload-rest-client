@@ -1,10 +1,12 @@
 import { ForbiddenError, NotFoundError, UnauthorizedError } from "./errors";
 import { ClientOptions } from "./types";
 
+export type FetchMethod = "GET" | "POST" | "PATCH" | "DELETE";
+
 type FetchParams = {
-    type?: "collection" | "global";
+    type?: "collection" | "global" | "custom";
     slug?: string;
-    method: "GET" | "POST" | "PATCH" | "DELETE";
+    method: FetchMethod;
     path: string | string[];
     qs: string | null;
     body?: any;
