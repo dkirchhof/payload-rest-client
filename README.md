@@ -129,6 +129,7 @@ const greeting = await client.custom.greet({
 - debug?: boolean;
 - getAdditionalFetchOptions?: (params: GetAdditionalFetchOptionsParams) => any;
 - customFetchFn? (input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
+- customEndpoints?: Record<String, CustomEndpointFactory>;
 
 ### Collections
 
