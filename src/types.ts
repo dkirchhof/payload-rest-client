@@ -32,14 +32,14 @@ export type CollectionsApi<CONFIG extends Config, LOCALES, DOC extends Doc, JOIN
     update: (params: UpdateParams<LOCALES, DOC>) => Promise<UpdateResult<DOC>>;
     updateById: (params: UpdateByIdParams<LOCALES, DOC>) => Promise<UpdateByIdResult<DOC>>;
     delete: (params?: DeleteParams<LOCALES, DOC>) => Promise<DeleteResult<DOC>>;
-    deleteById: (params: DeleteByIdParams<LOCALES>) => Promise<DOC>;
+    deleteById: (params: DeleteByIdParams<LOCALES, DOC>) => Promise<DOC>;
 };
 
 export type CollectionsWithAuthApi<CONFIG extends Config, LOCALES, DOC extends Doc, JOINS, SELECT> = CollectionsApi<CONFIG, LOCALES, DOC, JOINS, SELECT> & {
     login: (params: LoginParams) => Promise<LoginResult<DOC>>;
     logout: (params: LogoutParams) => Promise<LogoutResult>;
     unlock: (params: UnlockParams) => Promise<UnlockResult>;
-    "refresh-token": (params: RefreshTokenParams) => Promise<RefreshTokenResult>;
+    "refresh-token": (params: RefreshTokenParams) => Promise<RefreshTokenResult<DOC>>;
     // verify
     me: (params: MeParams) => Promise<MeResult<DOC>>;
     "forgot-password": (params: ForgotPasswordParams) => Promise<ForgotPasswordResult>;
@@ -202,7 +202,7 @@ export type UpdateResult<DOC extends Doc> = {
 };
 
 export type UpdateByIdParams<LOCALES, DOC extends Doc> = BaseParams<LOCALES> & {
-    id: string;
+    id: DOC["id"];
     patch: Partial<DOC>;
 };
 
@@ -219,8 +219,8 @@ export type DeleteParams<LOCALES, DOC extends Doc> = BaseParams<LOCALES> & {
     where?: Filter<DOC>;
 };
 
-export type DeleteByIdParams<LOCALES> = BaseParams<LOCALES> & {
-    id: string;
+export type DeleteByIdParams<LOCALES, DOC extends Doc> = BaseParams<LOCALES> & {
+    id: DOC["id"];
 };
 
 export type DeleteResult<DOC extends Doc> = {
@@ -252,12 +252,12 @@ export type UnlockResult = MessageResult;
 
 export type RefreshTokenParams = void;
 
-export type RefreshTokenResult = {
+export type RefreshTokenResult<DOC extends Doc> = {
     message: string;
     refreshedToken: string;
     exp: number;
     user: {
-        id: string;
+        id: DOC["id"];
         email: string;
         collection: string;
     };

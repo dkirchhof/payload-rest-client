@@ -164,7 +164,11 @@ const greeting = await client.custom.greet({
 
 ## Changelog
 
-### v 3.0.3
+### v 3.0.5
+
+- Infer id params (`string` or `number`) from type.
+
+### v 3.0.4
 
 - Added custom endpoints
 

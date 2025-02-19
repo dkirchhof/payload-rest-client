@@ -1,6 +1,6 @@
 {
   "name": "payload-rest-client",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "A typesafe rest api client for the payload cms.",
   "repository": "https://github.com/dkirchhof/payload-rest-client",
   "author": "dkirchhof@gmail.com",
